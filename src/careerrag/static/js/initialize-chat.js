@@ -1,4 +1,5 @@
 const ARMED_CLASS = 'armed';
+const BULLET_PREFIX = '\u2022 ';
 const BULLET_SLICE = 2;
 const DEFAULT_EXPAND_MS = 1000;
 const DEFAULT_NAME = 'John Doe';
@@ -145,7 +146,7 @@ function renderBlock(block) {
   const lines = block.split('\n');
   if (
     lines.every(function isBullet(line) {
-      return line.startsWith('\u2022 ');
+      return line.startsWith(BULLET_PREFIX);
     })
   ) {
     return renderBulletList(lines);
