@@ -16,6 +16,7 @@
   --gutter: clamp(16px, 4vw, 28px);
   --ink: #1f1c17;
   --ink-2: #3a362e;
+  --lh-body: 1.55;
   --muted: #6d675c;
   --muted-2: #8e887c;
   --pad-bubble: 0.65em;
@@ -25,6 +26,7 @@
   --pad-user-side: 0.9em;
   --paper: #fbf8f1;
   --rad-bubble: clamp(12px, 1.2vw, 18px);
+  --rad-pill: 999px;
   --rad-bubble-corner: calc(var(--rad-bubble) * 0.25);
   --rad-composer: clamp(18px, 2vw, 26px);
   --rule: #e4ddcc;
@@ -34,6 +36,7 @@
   --scrollbar-thumb: #d8d0bf;
   --scrollbar-thumb-hover: #c5bba3;
   --serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --size-button: 2.4em;
   --spacing-list: 0.25em;
   --t-expand: 1000ms;
   --t-medium: 0.2s;
@@ -180,7 +183,7 @@ body {
 .cr-scroll::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border: 2px solid var(--paper);
-  border-radius: 999px;
+  border-radius: var(--rad-pill);
 }
 
 .cr-scroll::-webkit-scrollbar-thumb:hover {
@@ -260,7 +263,7 @@ body {
 }
 
 .cr-message .cr-paragraph {
-  line-height: 1.55;
+  line-height: var(--lh-body);
   margin: 0 0 var(--pad-bubble);
   text-wrap: pretty;
 }
@@ -276,7 +279,7 @@ body {
 
 .cr-message .cr-list-item {
   color: var(--ink-2);
-  line-height: 1.55;
+  line-height: var(--lh-body);
   margin-bottom: var(--gap-turn);
 }
 
@@ -377,12 +380,12 @@ body {
   align-self: flex-end;
   background: transparent;
   border: 1px solid var(--rule);
-  border-radius: 999px;
+  border-radius: var(--rad-pill);
   color: var(--muted);
   cursor: pointer;
   display: grid;
   flex: none;
-  height: 2.4em;
+  height: var(--size-button);
   place-items: center;
   transition:
     background var(--t-quick),
@@ -390,7 +393,7 @@ body {
     color var(--t-quick),
     opacity var(--t-medium) var(--ease),
     width var(--t-medium) var(--ease);
-  width: 2.4em;
+  width: var(--size-button);
 }
 
 .cr-reset:hover {
@@ -412,17 +415,17 @@ body {
 .cr-send {
   background: var(--ink);
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--rad-pill);
   color: var(--paper);
   cursor: pointer;
   display: grid;
   flex: none;
-  height: 2.4em;
+  height: var(--size-button);
   place-items: center;
   transition:
     background var(--t-quick),
     opacity var(--t-quick);
-  width: 2.4em;
+  width: var(--size-button);
 }
 
 .cr-send:disabled {
