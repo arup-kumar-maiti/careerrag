@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../static/css/chat.css" />
   </head>
   <body>
-    <div class="cr-root" data-name="John Doe">
+    <main class="cr-root" data-name="John Doe">
       <div class="cr-stage" id="cr-stage" data-state="empty">
         <section class="cr-empty" id="cr-empty">
           <div class="cr-empty-above">
@@ -23,7 +23,7 @@
 
         <div class="cr-chat" id="cr-chat" aria-hidden="true">
           <div class="cr-scroll" id="cr-scroll">
-            <div class="cr-col" id="cr-col">
+            <div class="cr-column" id="cr-column">
               <div class="cr-bottom-spacer" id="cr-bottom-spacer"></div>
             </div>
           </div>
@@ -31,11 +31,15 @@
 
         <div class="cr-composer-wrap" id="cr-composer-wrap">
           <div class="cr-composer-inner">
-            <div class="cr-composer">
-              <textarea id="cr-input" class="cr-input" rows="1"></textarea>
+            <form class="cr-composer" id="cr-composer">
+              <textarea
+                id="cr-input"
+                class="cr-control cr-input"
+                rows="1"
+              ></textarea>
               <button
                 id="cr-new"
-                class="cr-reset"
+                class="cr-control cr-reset"
                 aria-label="New chat"
                 title="New chat"
               >
@@ -53,7 +57,12 @@
                   <path d="M3 4v5h5"></path>
                 </svg>
               </button>
-              <button id="cr-send" class="cr-send" aria-label="Send" disabled>
+              <button
+                id="cr-send"
+                class="cr-control cr-send"
+                aria-label="Send"
+                disabled
+              >
                 <svg
                   width="15"
                   height="15"
@@ -67,11 +76,11 @@
                   <path d="M12 19V5M5 12l7-7 7 7"></path>
                 </svg>
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
-    </div>
-    <script src="../static/js/chat.js"></script>
+    </main>
+    <script src="../static/js/initialize-chat.js"></script>
   </body>
 </html>

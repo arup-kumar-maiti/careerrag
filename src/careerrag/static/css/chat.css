@@ -1,20 +1,23 @@
 :root {
   --accent: oklch(0.62 0.13 40);
   --accent-ink: oklch(0.45 0.13 40);
+  --blur-enter: 2px;
+  --blur-exit: 6px;
   --bubble-user: #ece6d9;
-  --col-max: min(720px, 92vw);
+  --column-max: min(720px, 92vw);
   --composer-bg: #fffdf7;
   --danger: #c0392b;
   --ease: cubic-bezier(0.22, 0.8, 0.25, 1);
   --fs-base: clamp(14px, 0.9vw + 12px, 16px);
   --fs-hero: clamp(22px, 3.4vw, 34px);
   --fs-msg: clamp(14.5px, 0.5vw + 13px, 16px);
-  --gap-col: 0.5em;
+  --gap-column: 0.5em;
   --gap-composer: 0.65em;
   --gap-turn: 0.4em;
   --gutter: clamp(16px, 4vw, 28px);
   --ink: #1f1c17;
   --ink-2: #3a362e;
+  --msg-user-max-width: 85%;
   --muted: #6d675c;
   --muted-2: #8e887c;
   --pad-bubble: 0.65em;
@@ -24,6 +27,7 @@
   --pad-user-side: 0.9em;
   --paper: #fbf8f1;
   --rad-bub: clamp(12px, 1.2vw, 18px);
+  --rad-bub-corner: calc(var(--rad-bub) * 0.25);
   --rad-comp: clamp(18px, 2vw, 26px);
   --rule: #e4ddcc;
   --rule-strong: #d4ccb7;
@@ -52,8 +56,7 @@ body {
   overflow: hidden;
 }
 
-button,
-textarea {
+.cr-control {
   color: inherit;
   font-family: inherit;
 }
@@ -90,10 +93,10 @@ textarea {
   bottom: 50%;
   display: flex;
   flex-direction: column;
-  gap: var(--gap-col);
+  gap: var(--gap-column);
   left: 0;
   margin-inline: auto;
-  max-width: var(--col-max);
+  max-width: var(--column-max);
   padding: 0 var(--gutter);
   padding-bottom: calc(
     (var(--composer-empty-h, 70px) / 2) + clamp(28px, 5vh, 52px)
@@ -150,7 +153,7 @@ textarea {
 
 .cr-stage[data-state='leaving'] .cr-empty,
 .cr-stage[data-state='chat'] .cr-empty {
-  filter: blur(6px);
+  filter: blur(var(--blur-exit));
   opacity: 0;
   pointer-events: none;
   transform: scale(1.06);
@@ -184,12 +187,12 @@ textarea {
   background: var(--scrollbar-thumb-hover);
 }
 
-.cr-col {
+.cr-column {
   display: flex;
   flex-direction: column;
-  gap: var(--gap-col);
+  gap: var(--gap-column);
   margin: 0 auto;
-  max-width: var(--col-max);
+  max-width: var(--column-max);
   overflow-anchor: none;
   padding: 0 var(--gutter) var(--composer-pad, 120px);
   width: 100%;
@@ -214,7 +217,7 @@ textarea {
 
 @keyframes turnIn {
   from {
-    filter: blur(2px);
+    filter: blur(var(--blur-enter));
     opacity: 0;
     transform: translateY(40px);
   }
@@ -236,7 +239,7 @@ textarea {
   padding: var(--pad-msg) 0;
 }
 
-.cr-msg.assistant .body {
+.cr-msg.assistant .cr-body {
   color: var(--ink-2);
   max-width: 100%;
 }
@@ -245,32 +248,32 @@ textarea {
   justify-content: flex-end;
 }
 
-.cr-msg.user .body {
+.cr-msg.user .cr-body {
   background: var(--bubble-user);
-  border-radius: var(--rad-bub) var(--rad-bub) calc(var(--rad-bub) * 0.25)
+  border-radius: var(--rad-bub) var(--rad-bub) var(--rad-bub-corner)
     var(--rad-bub);
   color: var(--ink);
-  max-width: 85%;
+  max-width: var(--msg-user-max-width);
   padding: var(--pad-bubble) var(--pad-user-side);
   white-space: pre-wrap;
 }
 
-.cr-msg p {
+.cr-msg .cr-paragraph {
   line-height: 1.55;
   margin: 0 0 var(--pad-bubble);
   text-wrap: pretty;
 }
 
-.cr-msg p:last-child {
+.cr-msg .cr-paragraph:last-child {
   margin-bottom: 0;
 }
 
-.cr-msg ul {
+.cr-msg .cr-list {
   margin: var(--spacing-list) 0 var(--pad-bubble);
   padding-left: 1.25em;
 }
 
-.cr-msg li {
+.cr-msg .cr-list-item {
   color: var(--ink-2);
   line-height: 1.55;
   margin-bottom: var(--gap-turn);
@@ -322,7 +325,7 @@ textarea {
 
 .cr-composer-inner {
   margin: 0 auto;
-  max-width: var(--col-max);
+  max-width: var(--column-max);
   pointer-events: auto;
 }
 

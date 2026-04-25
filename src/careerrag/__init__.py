@@ -1,1 +1,1 @@
-"""CareerRAG chat application."""
+"""Provide the CareerRAG chat application package."""
