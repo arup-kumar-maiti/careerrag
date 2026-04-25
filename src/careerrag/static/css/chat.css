@@ -1,8 +1,6 @@
 :root {
   --accent: oklch(0.62 0.13 40);
   --accent-ink: oklch(0.45 0.13 40);
-  --blur-enter: 2px;
-  --blur-exit: 6px;
   --bubble-user: #ece6d9;
   --column-max: min(720px, 92vw);
   --composer-bg: #fffdf7;
@@ -18,7 +16,6 @@
   --gutter: clamp(16px, 4vw, 28px);
   --ink: #1f1c17;
   --ink-2: #3a362e;
-  --msg-user-max-width: 85%;
   --muted: #6d675c;
   --muted-2: #8e887c;
   --pad-bubble: 0.65em;
@@ -42,7 +39,6 @@
   --t-medium: 0.2s;
   --t-quick: 0.15s;
   --t-slide: 720ms;
-  --z-composer: 2;
 }
 
 * {
@@ -157,7 +153,7 @@ body {
 
 .cr-stage[data-state='leaving'] .cr-empty,
 .cr-stage[data-state='chat'] .cr-empty {
-  filter: blur(var(--blur-exit));
+  filter: blur(6px);
   opacity: 0;
   pointer-events: none;
   transform: scale(1.06);
@@ -221,7 +217,7 @@ body {
 
 @keyframes turnIn {
   from {
-    filter: blur(var(--blur-enter));
+    filter: blur(2px);
     opacity: 0;
     transform: translateY(40px);
   }
@@ -253,6 +249,7 @@ body {
 }
 
 .cr-message.user .cr-body {
+  --msg-user-max-width: 85%;
   background: var(--bubble-user);
   border-radius: var(--rad-bub) var(--rad-bub) var(--rad-bub-corner)
     var(--rad-bub);
@@ -301,6 +298,7 @@ body {
 }
 
 .cr-composer-wrap {
+  --z-composer: 2;
   background: linear-gradient(
     to top,
     var(--paper) 60%,

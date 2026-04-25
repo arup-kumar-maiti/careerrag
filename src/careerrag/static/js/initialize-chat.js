@@ -31,7 +31,7 @@ const STREAM_START_MS = 380;
 const STREAM_SUPPRESS_MS = 80;
 const TURN_SELECTOR = '.cr-turn';
 const TYPE_MS = 38;
-const SUGGESTIONS = [
+const TYPEWRITER_PROMPTS = [
   'How does ' + NAME + ' show up in a team?',
   'Walk me through a project ' + NAME + ' is proud of',
   'What do peers say about working with ' + NAME + '?',
@@ -79,7 +79,7 @@ function setStage(state) {
 
 function makeTurnNode(userText) {
   const turn = document.createElement('div');
-  turn.className = 'cr-turn entering';
+  turn.className = 'cr-turn ' + ENTERING_CLASS;
   turn.innerHTML =
     '<div class="cr-message user"><div class="cr-body"></div></div>' +
     '<div class="cr-message assistant"><div class="cr-body"></div></div>';
@@ -264,7 +264,7 @@ function attemptSend() {
 }
 
 function typePlaceholderChar(state) {
-  const target = SUGGESTIONS[state.index];
+  const target = TYPEWRITER_PROMPTS[state.index];
   state.position++;
   inputElement.setAttribute('placeholder', target.slice(0, state.position));
   if (state.position >= target.length) {
@@ -275,7 +275,7 @@ function typePlaceholderChar(state) {
 }
 
 function erasePlaceholderChar(state) {
-  const target = SUGGESTIONS[state.index];
+  const target = TYPEWRITER_PROMPTS[state.index];
   state.position--;
   inputElement.setAttribute(
     'placeholder',
@@ -295,7 +295,7 @@ function advancePlaceholder(state) {
     return ERASE_MS;
   }
   if (state.mode === MODE_ERASE) return erasePlaceholderChar(state);
-  state.index = (state.index + 1) % SUGGESTIONS.length;
+  state.index = (state.index + 1) % TYPEWRITER_PROMPTS.length;
   state.position = 0;
   state.mode = MODE_TYPE;
   return TYPE_MS;
