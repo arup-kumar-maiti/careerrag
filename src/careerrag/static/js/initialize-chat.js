@@ -1,6 +1,7 @@
 const ARMED_CLASS = 'armed';
 const BULLET_PREFIX = '\u2022 ';
 const BULLET_SLICE = 2;
+const CURSOR_HTML = '<span class="cr-cursor"></span>';
 const DEFAULT_EXPAND_MS = 1000;
 const DEFAULT_NAME = 'John Doe';
 const DEFAULT_SPACER_HEIGHT = 60;
@@ -186,7 +187,7 @@ function streamReply(turnNode, fullText, onDone) {
   let position = 0;
   const total = fullText.length;
   const msPerChar = MS_PER_SEC / STREAM_CHARS_PER_SEC;
-  target.innerHTML = '<span class="cr-cursor"></span>';
+  target.innerHTML = CURSOR_HTML;
 
   function advanceStream() {
     const jump = Math.max(
@@ -194,7 +195,7 @@ function streamReply(turnNode, fullText, onDone) {
       Math.min(STREAM_JUMP_MAX, Math.round(STREAM_JUMP_DIVISOR / msPerChar)),
     );
     position = Math.min(total, position + jump);
-    const cursor = position < total ? '<span class="cr-cursor"></span>' : '';
+    const cursor = position < total ? CURSOR_HTML : '';
     target.innerHTML = renderBody(fullText.slice(0, position)) + cursor;
     if (following) pinToLastTurn();
     if (position < total) {

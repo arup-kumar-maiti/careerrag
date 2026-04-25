@@ -24,9 +24,9 @@
   --pad-msg: 0.4em;
   --pad-user-side: 0.9em;
   --paper: #fbf8f1;
-  --rad-bub: clamp(12px, 1.2vw, 18px);
-  --rad-bub-corner: calc(var(--rad-bub) * 0.25);
-  --rad-comp: clamp(18px, 2vw, 26px);
+  --rad-bubble: clamp(12px, 1.2vw, 18px);
+  --rad-bubbleble-corner: calc(var(--rad-bubble) * 0.25);
+  --rad-composer: clamp(18px, 2vw, 26px);
   --rule: #e4ddcc;
   --rule-strong: #d4ccb7;
   --sans:
@@ -251,8 +251,8 @@ body {
 .cr-message.user .cr-body {
   --msg-user-max-width: 85%;
   background: var(--bubble-user);
-  border-radius: var(--rad-bub) var(--rad-bub) var(--rad-bub-corner)
-    var(--rad-bub);
+  border-radius: var(--rad-bubble) var(--rad-bubble) var(--rad-bubbleble-corner)
+    var(--rad-bubble);
   color: var(--ink);
   max-width: var(--msg-user-max-width);
   padding: var(--pad-bubble) var(--pad-user-side);
@@ -335,7 +335,7 @@ body {
   align-items: flex-end;
   background: var(--composer-bg);
   border: 1px solid var(--rule-strong);
-  border-radius: var(--rad-comp);
+  border-radius: var(--rad-composer);
   box-shadow:
     0 12px 36px -18px rgba(40, 30, 20, 0.25),
     0 2px 8px rgba(40, 30, 20, 0.05);
