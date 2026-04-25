@@ -81,9 +81,9 @@ function makeTurnNode(userText) {
   const turn = document.createElement('div');
   turn.className = 'cr-turn entering';
   turn.innerHTML =
-    '<div class="cr-msg user"><div class="cr-body"></div></div>' +
-    '<div class="cr-msg assistant"><div class="cr-body"></div></div>';
-  turn.querySelector('.cr-msg.user .cr-body').textContent = userText;
+    '<div class="cr-message user"><div class="cr-body"></div></div>' +
+    '<div class="cr-message assistant"><div class="cr-body"></div></div>';
+  turn.querySelector('.cr-message.user .cr-body').textContent = userText;
   setTimeout(function cleanupEntering() {
     turn.classList.remove(ENTERING_CLASS);
   }, ENTERING_CLEANUP_MS);
@@ -181,7 +181,7 @@ function pinToLastTurn() {
 }
 
 function streamReply(turnNode, fullText, onDone) {
-  const target = turnNode.querySelector('.cr-msg.assistant .cr-body');
+  const target = turnNode.querySelector('.cr-message.assistant .cr-body');
   let position = 0;
   const total = fullText.length;
   const msPerChar = MS_PER_SEC / STREAM_CHARS_PER_SEC;

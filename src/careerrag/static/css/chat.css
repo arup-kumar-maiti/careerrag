@@ -14,6 +14,7 @@
   --gap-column: 0.5em;
   --gap-composer: 0.65em;
   --gap-turn: 0.4em;
+  --gap-turn-between: clamp(14px, 2vh, 22px);
   --gutter: clamp(16px, 4vw, 28px);
   --ink: #1f1c17;
   --ink-2: #3a362e;
@@ -38,7 +39,10 @@
   --serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
   --spacing-list: 0.25em;
   --t-expand: 1000ms;
+  --t-medium: 0.2s;
+  --t-quick: 0.15s;
   --t-slide: 720ms;
+  --z-composer: 2;
 }
 
 * {
@@ -118,7 +122,7 @@ body {
   text-wrap: balance;
 }
 
-.cr-hero em {
+.cr-hero-accent {
   color: var(--accent);
   font-style: italic;
 }
@@ -206,7 +210,7 @@ body {
 }
 
 .cr-turn + .cr-turn {
-  margin-top: clamp(14px, 2vh, 22px);
+  margin-top: var(--gap-turn-between);
 }
 
 .cr-bottom-spacer {
@@ -232,23 +236,23 @@ body {
   animation: turnIn var(--t-slide) var(--ease) both;
 }
 
-.cr-msg {
+.cr-message {
   display: flex;
   font-size: var(--fs-msg);
   overflow-anchor: none;
   padding: var(--pad-msg) 0;
 }
 
-.cr-msg.assistant .cr-body {
+.cr-message.assistant .cr-body {
   color: var(--ink-2);
   max-width: 100%;
 }
 
-.cr-msg.user {
+.cr-message.user {
   justify-content: flex-end;
 }
 
-.cr-msg.user .cr-body {
+.cr-message.user .cr-body {
   background: var(--bubble-user);
   border-radius: var(--rad-bub) var(--rad-bub) var(--rad-bub-corner)
     var(--rad-bub);
@@ -258,22 +262,22 @@ body {
   white-space: pre-wrap;
 }
 
-.cr-msg .cr-paragraph {
+.cr-message .cr-paragraph {
   line-height: 1.55;
   margin: 0 0 var(--pad-bubble);
   text-wrap: pretty;
 }
 
-.cr-msg .cr-paragraph:last-child {
+.cr-message .cr-paragraph:last-child {
   margin-bottom: 0;
 }
 
-.cr-msg .cr-list {
+.cr-message .cr-list {
   margin: var(--spacing-list) 0 var(--pad-bubble);
   padding-left: 1.25em;
 }
 
-.cr-msg .cr-list-item {
+.cr-message .cr-list-item {
   color: var(--ink-2);
   line-height: 1.55;
   margin-bottom: var(--gap-turn);
@@ -313,7 +317,7 @@ body {
     bottom var(--t-expand) var(--ease),
     top var(--t-expand) var(--ease),
     transform var(--t-expand) var(--ease);
-  z-index: 2;
+  z-index: var(--z-composer);
 }
 
 .cr-stage[data-state='empty'] .cr-composer-wrap {
@@ -342,8 +346,8 @@ body {
   padding: var(--pad-composer) var(--pad-composer-side) var(--pad-composer-side)
     var(--pad-composer);
   transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+    border-color var(--t-quick),
+    box-shadow var(--t-quick);
 }
 
 .cr-composer:focus-within {
@@ -383,11 +387,11 @@ body {
   height: 2.4em;
   place-items: center;
   transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s,
-    opacity 0.2s var(--ease),
-    width 0.2s var(--ease);
+    background var(--t-quick),
+    border-color var(--t-quick),
+    color var(--t-quick),
+    opacity var(--t-medium) var(--ease),
+    width var(--t-medium) var(--ease);
   width: 2.4em;
 }
 
@@ -418,8 +422,8 @@ body {
   height: 2.4em;
   place-items: center;
   transition:
-    background 0.15s,
-    opacity 0.15s;
+    background var(--t-quick),
+    opacity var(--t-quick);
   width: 2.4em;
 }
 

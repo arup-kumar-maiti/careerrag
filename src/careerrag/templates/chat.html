@@ -17,11 +17,19 @@
       <div class="cr-stage" id="cr-stage" data-state="empty">
         <section class="cr-empty" id="cr-empty">
           <div class="cr-empty-above">
-            <h1 class="cr-hero">Ask anything about <em>John Doe</em>.</h1>
+            <h1 class="cr-hero">
+              Ask anything about <em class="cr-hero-accent">John Doe</em>.
+            </h1>
           </div>
         </section>
 
-        <div class="cr-chat" id="cr-chat" aria-hidden="true">
+        <div
+          class="cr-chat"
+          id="cr-chat"
+          role="log"
+          aria-live="polite"
+          aria-hidden="true"
+        >
           <div class="cr-scroll" id="cr-scroll">
             <div class="cr-column" id="cr-column">
               <div class="cr-bottom-spacer" id="cr-bottom-spacer"></div>
