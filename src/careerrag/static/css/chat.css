@@ -26,9 +26,9 @@
   --pad-user-side: 0.9em;
   --paper: #fbf8f1;
   --rad-bubble: clamp(12px, 1.2vw, 18px);
-  --rad-pill: 999px;
   --rad-bubble-corner: calc(var(--rad-bubble) * 0.25);
   --rad-composer: clamp(18px, 2vw, 26px);
+  --rad-pill: 999px;
   --rule: #e4ddcc;
   --rule-strong: #d4ccb7;
   --sans:
