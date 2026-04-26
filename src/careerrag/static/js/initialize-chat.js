@@ -222,6 +222,8 @@ function commitTurn(userText) {
       inputElement.focus();
     })
     .catch(function handleStreamError() {
+      turn.querySelector('.cr-message.assistant .cr-body').textContent =
+        'Connection failed. Try again.';
       busy = false;
       sendButton.disabled = !inputElement.value.trim();
       if (inputElement.value.trim()) sendButton.classList.add(ARMED_CLASS);
