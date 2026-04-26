@@ -214,12 +214,18 @@ function commitTurn(userText) {
   sendButton.disabled = true;
   sendButton.classList.remove(ARMED_CLASS);
   const turn = insertTurn(userText);
-  streamFromServer(turn, userText).then(function handleStreamDone() {
-    busy = false;
-    sendButton.disabled = !inputElement.value.trim();
-    if (inputElement.value.trim()) sendButton.classList.add(ARMED_CLASS);
-    inputElement.focus();
-  });
+  streamFromServer(turn, userText)
+    .then(function handleStreamDone() {
+      busy = false;
+      sendButton.disabled = !inputElement.value.trim();
+      if (inputElement.value.trim()) sendButton.classList.add(ARMED_CLASS);
+      inputElement.focus();
+    })
+    .catch(function handleStreamError() {
+      busy = false;
+      sendButton.disabled = !inputElement.value.trim();
+      if (inputElement.value.trim()) sendButton.classList.add(ARMED_CLASS);
+    });
 }
 
 function send(text) {
