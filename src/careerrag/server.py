@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
+from pydantic import BaseModel
 
 APP_TITLE = "CareerRAG"
 CONTENT_TYPE_SSE = "text/event-stream"
@@ -19,6 +20,12 @@ MOCK_RESPONSE = (
 )
 PACKAGE_DIR = Path(__file__).parent
 STREAM_CHUNK_DELAY = 0.02
+
+
+class ChatRequest(BaseModel):
+    """Represent an incoming chat message."""
+
+    message: str
 
 
 def _render_template(environment: Environment, name: str) -> str:
@@ -50,11 +57,11 @@ def create_app(name: str) -> FastAPI:
     )
 
     @app.get("/", response_class=HTMLResponse)
-    async def index() -> str:
+    async def render_index() -> str:
         return _render_template(templates, name)
 
     @app.post("/api/chat")
-    async def chat() -> StreamingResponse:
+    async def handle_chat(request: ChatRequest) -> StreamingResponse:
         return StreamingResponse(
             _stream_mock_response(),
             media_type=CONTENT_TYPE_SSE,
