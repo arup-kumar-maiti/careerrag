@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatch-vcs", "hatchling"]
 
 [project]
 authors = [{ name = "Arup Kumar Maiti", email = "arup@arupkumarmaiti.com" }]
