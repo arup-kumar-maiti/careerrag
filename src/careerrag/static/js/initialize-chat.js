@@ -1,10 +1,8 @@
 const ARMED_CLASS = 'armed';
 const BULLET_PREFIX = '\u2022 ';
-const BULLET_SLICE = 2;
 const CURSOR_HTML = '<span class="cr-cursor"></span>';
 const DEFAULT_EXPAND_MS = 1000;
 const DEFAULT_NAME = 'John Doe';
-const DEFAULT_SPACER_HEIGHT = 60;
 const ENTERING_CLASS = 'entering';
 const ENTERING_CLEANUP_MS = 700;
 const ERASE_MS = 18;
@@ -43,8 +41,7 @@ const TYPEWRITER_PROMPTS = [
 const bottomSpacer = document.getElementById('cr-bottom-spacer');
 const chatElement = document.getElementById('cr-chat');
 const columnElement = document.getElementById('cr-column');
-const composerElement = document.querySelector('.cr-composer');
-const composerForm = document.getElementById('cr-composer');
+const composerElement = document.getElementById('cr-composer');
 const composerWrap = document.getElementById('cr-composer-wrap');
 const emptyElement = document.getElementById('cr-empty');
 const inputElement = document.getElementById('cr-input');
@@ -97,12 +94,9 @@ function recomputeSpacer() {
     '--composer-pad',
     composerWrap.offsetHeight + 'px',
   );
-  const innerHeight = composerElement
-    ? composerElement.offsetHeight
-    : DEFAULT_SPACER_HEIGHT;
   document.documentElement.style.setProperty(
     '--composer-empty-h',
-    innerHeight + 'px',
+    composerElement.offsetHeight + 'px',
   );
   bottomSpacer.style.height = scrollerElement.clientHeight + 'px';
 }
@@ -134,7 +128,7 @@ function renderBulletList(lines) {
       .map(function renderItem(line) {
         return (
           '<li class="cr-list-item">' +
-          escapeHtml(line.slice(BULLET_SLICE)) +
+          escapeHtml(line.slice(BULLET_PREFIX.length)) +
           '</li>'
         );
       })
@@ -242,7 +236,7 @@ function send(text) {
     const expandMs =
       parseInt(
         getComputedStyle(document.documentElement).getPropertyValue(
-          '--t-expand',
+          '--duration-expand',
         ),
       ) || DEFAULT_EXPAND_MS;
     setTimeout(function beginCommit() {
@@ -339,7 +333,7 @@ function resetChat() {
   inputElement.focus();
 }
 
-composerForm.addEventListener('submit', function preventSubmit(event) {
+composerElement.addEventListener('submit', function preventSubmit(event) {
   event.preventDefault();
 });
 inputElement.addEventListener('input', function handleInput() {
