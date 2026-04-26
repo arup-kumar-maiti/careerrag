@@ -10,15 +10,16 @@
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../static/css/chat.css" />
+    <link rel="stylesheet" href="/static/css/chat.css" />
   </head>
   <body>
-    <main class="cr-root" data-name="John Doe">
+    <main class="cr-root" data-name="{{ name }}">
       <div class="cr-stage" id="cr-stage" data-state="empty">
         <section class="cr-empty" id="cr-empty">
           <div class="cr-empty-above">
             <h1 class="cr-hero">
-              Ask anything about <em class="cr-hero-accent">John Doe</em>.
+              Ask anything about
+              <em class="cr-hero-accent">{{ name }}</em>.
             </h1>
           </div>
         </section>
@@ -89,6 +90,6 @@
         </div>
       </div>
     </main>
-    <script src="../static/js/initialize-chat.js"></script>
+    <script src="/static/js/initialize-chat.js"></script>
   </body>
 </html>

@@ -1,1 +1,1 @@
-"""Provide the CareerRAG chat application package."""
+"""careerrag — RAG-powered chat interface for career profiles."""

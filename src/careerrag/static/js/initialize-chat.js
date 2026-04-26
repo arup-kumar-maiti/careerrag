@@ -1,8 +1,10 @@
 const ARMED_CLASS = 'armed';
 const BULLET_PREFIX = '\u2022 ';
+const CHAT_ENDPOINT = '/api/chat';
 const CURSOR_HTML = '<span class="cr-cursor"></span>';
 const DEFAULT_EXPAND_MS = 1000;
 const DEFAULT_NAME = 'John Doe';
+const DONE_SIGNAL = '[DONE]';
 const ENTERING_CLASS = 'entering';
 const ENTERING_CLEANUP_MS = 700;
 const ERASE_MS = 18;
@@ -16,18 +18,14 @@ const MODE_ERASE = 'erase';
 const MODE_GAP = 'gap';
 const MODE_HOLD = 'hold';
 const MODE_TYPE = 'type';
-const MS_PER_SEC = 1000;
 const NAME = document.querySelector('.cr-root').dataset.name || DEFAULT_NAME;
 const PLACEHOLDER_START_MS = 400;
 const SCROLL_PIN_THRESHOLD = 0.5;
 const SCROLL_SUPPRESS_MS = 250;
+const SSE_PREFIX = 'data: ';
 const STAGE_CHAT = 'chat';
 const STAGE_EMPTY = 'empty';
 const STAGE_LEAVING = 'leaving';
-const STREAM_CHARS_PER_SEC = 360;
-const STREAM_JUMP_DIVISOR = 12;
-const STREAM_JUMP_MAX = 3;
-const STREAM_START_MS = 380;
 const STREAM_SUPPRESS_MS = 80;
 const TURN_SELECTOR = '.cr-turn';
 const TYPE_MS = 38;
@@ -53,7 +51,6 @@ const stageElement = document.getElementById('cr-stage');
 let busy = false;
 let following = true;
 let stageState = STAGE_EMPTY;
-let streamTimer = null;
 let suppressScrollUntil = 0;
 
 function autosize() {
@@ -108,6 +105,19 @@ function snapToActive() {
   scrollerElement.scrollTop = turns[turns.length - 1].offsetTop;
 }
 
+function insertTurn(userText) {
+  const turn = makeTurnNode(userText);
+  columnElement.insertBefore(turn, bottomSpacer);
+  following = true;
+  recomputeSpacer();
+  snapToActive();
+  requestAnimationFrame(function resnapAfterPaint() {
+    snapToActive();
+    requestAnimationFrame(snapToActive);
+  });
+  return turn;
+}
+
 function escapeHtml(source) {
   const map = {
     '&': '&amp;',
@@ -157,13 +167,6 @@ function renderBody(text) {
   return text.split(/\n\n+/).map(renderBlock).join('');
 }
 
-function generateMockResponse() {
-  return (
-    'This is a placeholder response. Connect the backend to see real ' +
-    'answers streamed here.'
-  );
-}
-
 function pinToLastTurn() {
   const turns = columnElement.querySelectorAll(TURN_SELECTOR);
   const last = turns[turns.length - 1];
@@ -176,43 +179,34 @@ function pinToLastTurn() {
   }
 }
 
-function streamReply(turnNode, fullText, onDone) {
+async function streamFromServer(turnNode, userText) {
   const target = turnNode.querySelector('.cr-message.assistant .cr-body');
-  let position = 0;
-  const total = fullText.length;
-  const msPerChar = MS_PER_SEC / STREAM_CHARS_PER_SEC;
+  let fullText = '';
   target.innerHTML = CURSOR_HTML;
-
-  function advanceStream() {
-    const jump = Math.max(
-      1,
-      Math.min(STREAM_JUMP_MAX, Math.round(STREAM_JUMP_DIVISOR / msPerChar)),
-    );
-    position = Math.min(total, position + jump);
-    const cursor = position < total ? CURSOR_HTML : '';
-    target.innerHTML = renderBody(fullText.slice(0, position)) + cursor;
-    if (following) pinToLastTurn();
-    if (position < total) {
-      streamTimer = setTimeout(advanceStream, msPerChar * jump);
-    } else {
-      streamTimer = null;
-      if (onDone) onDone();
+  const response = await fetch(CHAT_ENDPOINT, {
+    body: JSON.stringify({ message: userText }),
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+  });
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith(SSE_PREFIX)) continue;
+      const token = line.slice(SSE_PREFIX.length);
+      if (token === DONE_SIGNAL) break;
+      fullText += token;
+      target.innerHTML = renderBody(fullText) + CURSOR_HTML;
+      if (following) pinToLastTurn();
     }
   }
-  streamTimer = setTimeout(advanceStream, STREAM_START_MS);
-}
-
-function insertTurn(userText) {
-  const turn = makeTurnNode(userText);
-  columnElement.insertBefore(turn, bottomSpacer);
-  following = true;
-  recomputeSpacer();
-  snapToActive();
-  requestAnimationFrame(function resnapAfterPaint() {
-    snapToActive();
-    requestAnimationFrame(snapToActive);
-  });
-  return turn;
+  target.innerHTML = renderBody(fullText);
 }
 
 function commitTurn(userText) {
@@ -220,7 +214,7 @@ function commitTurn(userText) {
   sendButton.disabled = true;
   sendButton.classList.remove(ARMED_CLASS);
   const turn = insertTurn(userText);
-  streamReply(turn, generateMockResponse(), function handleStreamDone() {
+  streamFromServer(turn, userText).then(function handleStreamDone() {
     busy = false;
     sendButton.disabled = !inputElement.value.trim();
     if (inputElement.value.trim()) sendButton.classList.add(ARMED_CLASS);
@@ -313,10 +307,6 @@ function runPlaceholderLoop() {
 }
 
 function resetChat() {
-  if (streamTimer) {
-    clearTimeout(streamTimer);
-    streamTimer = null;
-  }
   columnElement
     .querySelectorAll(TURN_SELECTOR)
     .forEach(function removeTurn(node) {
