@@ -3,11 +3,11 @@
 import re
 from dataclasses import dataclass, field
 
-HEADER_PREFIX = re.compile(r"^#+\s*")
 HEADER_PATTERN = re.compile(
     r"^(?:#{1,3}\s+.+|[A-Z][A-Za-z\s/&]{2,30}:\s*$|[A-Z][A-Z\s]{2,30}$)",
     re.MULTILINE,
 )
+HEADER_PREFIX = re.compile(r"^#+\s*")
 MAX_CHUNK_SIZE = 1000
 MIN_CHUNK_SIZE = 100
 OVERLAP_SIZE = 100
@@ -43,13 +43,15 @@ def _detect_sections(text: str) -> list[tuple[str, str]]:
     return sections
 
 
-def _merge_small(paragraphs: list[str], min_size: int, max_size: int) -> list[str]:
+def _merge_short_paragraphs(
+    paragraphs: list[str], min_size: int, max_size: int
+) -> list[str]:
     if not paragraphs:
         return []
     merged: list[str] = []
     current = paragraphs[0]
     for paragraph in paragraphs[1:]:
-        combined = current + "\n\n" + paragraph
+        combined = current + SECTION_SEPARATOR + paragraph
         if len(current) < min_size and len(combined) <= max_size:
             current = combined
         else:
@@ -142,7 +144,7 @@ def chunk_document(text: str, source: str) -> list[Chunk]:
         paragraphs = [
             p.strip() for p in section_body.split(SECTION_SEPARATOR) if p.strip()
         ]
-        merged = _merge_small(paragraphs, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE)
+        merged = _merge_short_paragraphs(paragraphs, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE)
         split: list[str] = []
         for paragraph in merged:
             split.extend(_split_oversized(paragraph, MAX_CHUNK_SIZE))
