@@ -12,11 +12,9 @@ TEXT_ENCODING = "utf-8"
 
 def _load_docx(path: Path) -> str:
     doc = Document(str(path))
-    return PARAGRAPH_SEPARATOR.join(p.text for p in doc.paragraphs if p.text.strip())
-
-
-def _load_text(path: Path) -> str:
-    return path.read_text(encoding=TEXT_ENCODING)
+    return PARAGRAPH_SEPARATOR.join(
+        paragraph.text for paragraph in doc.paragraphs if paragraph.text.strip()
+    )
 
 
 def _load_pdf(path: Path) -> str:
@@ -27,7 +25,13 @@ def _load_pdf(path: Path) -> str:
 
 
 def _load_rtf(path: Path) -> str:
-    return rtf_to_text(path.read_text(encoding=TEXT_ENCODING))
+    raw = path.read_text(encoding=TEXT_ENCODING)
+    result: str = rtf_to_text(raw)
+    return result
+
+
+def _load_text(path: Path) -> str:
+    return path.read_text(encoding=TEXT_ENCODING)
 
 
 def load_document(path: Path) -> tuple[str, str]:
