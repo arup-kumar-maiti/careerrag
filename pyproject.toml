@@ -14,7 +14,6 @@ dependencies = [
   "jinja2>=3.1",
   "pymupdf>=1.25",
   "python-docx>=1.1",
-  "striprtf>=0.0.26",
   "uvicorn[standard]>=0.34",
 ]
 description = "RAG-powered chat interface for career profiles"
