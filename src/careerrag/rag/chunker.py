@@ -142,7 +142,9 @@ def chunk_document(text: str, source: str) -> list[Chunk]:
     chunks: list[Chunk] = []
     for section_title, section_body in sections:
         paragraphs = [
-            p.strip() for p in section_body.split(SECTION_SEPARATOR) if p.strip()
+            part.strip()
+            for part in section_body.split(SECTION_SEPARATOR)
+            if part.strip()
         ]
         merged = _merge_short_paragraphs(paragraphs, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE)
         split: list[str] = []
