@@ -4,7 +4,7 @@ import argparse
 
 import uvicorn
 
-from careerrag.server import create_app
+from careerrag.server.app import create_app
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_NAME = "John Doe"
