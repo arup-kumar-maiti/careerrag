@@ -13,12 +13,12 @@ from pydantic import BaseModel
 APP_TITLE = "CareerRAG"
 CONTENT_TYPE_SSE = "text/event-stream"
 DONE_SIGNAL = "data: [DONE]\n\n"
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 MOCK_RESPONSE = (
     "This is a placeholder response streamed from the backend. "
     "Once the RAG pipeline is connected, answers will be grounded "
     "in the uploaded documents."
 )
-FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 STREAM_CHUNK_DELAY = 0.02
 
 
