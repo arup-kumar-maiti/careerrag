@@ -18,7 +18,7 @@ MOCK_RESPONSE = (
     "Once the RAG pipeline is connected, answers will be grounded "
     "in the uploaded documents."
 )
-PACKAGE_DIR = Path(__file__).parent
+FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 STREAM_CHUNK_DELAY = 0.02
 
 
@@ -47,13 +47,13 @@ def create_app(name: str) -> FastAPI:
     app = FastAPI(title=APP_TITLE)
     app.mount(
         "/static",
-        StaticFiles(directory=PACKAGE_DIR / "static"),
+        StaticFiles(directory=FRONTEND_DIR / "static"),
         name="static",
     )
 
     templates = Environment(
         autoescape=True,
-        loader=FileSystemLoader(PACKAGE_DIR / "templates"),
+        loader=FileSystemLoader(FRONTEND_DIR / "templates"),
     )
 
     @app.get("/", response_class=HTMLResponse)
