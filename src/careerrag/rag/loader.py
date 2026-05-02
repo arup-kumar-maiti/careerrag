@@ -29,7 +29,7 @@ def _load_docx(path: Path) -> str:
         text = paragraph.text.strip()
         if not text:
             continue
-        if paragraph.style.name.startswith(HEADING_STYLE_PREFIX):
+        if paragraph.style and paragraph.style.name.startswith(HEADING_STYLE_PREFIX):
             parts.append(text + ":")
         else:
             parts.append(text)
