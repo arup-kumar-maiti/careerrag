@@ -1,17 +1,20 @@
-"""Split documents into searchable chunks with section metadata."""
+"""Split structured document elements into searchable chunks."""
 
 import re
 from dataclasses import dataclass, field
 
-HEADER_PATTERN = re.compile(
-    r"^(?:#{1,3}\s+.+|[A-Z][A-Za-z\s/&]{2,30}:\s*$|[A-Z][A-Z\s]{2,30}$)",
-    re.MULTILINE,
+from careerrag.rag.loader import (
+    KIND_CONTACT,
+    KIND_HEADING,
+    KIND_SEPARATOR,
+    KIND_TITLE,
+    DocumentElement,
+    LoadedDocument,
 )
-HEADER_PREFIX = re.compile(r"^#+\s*")
+
 MAX_CHUNK_SIZE = 1000
 MIN_CHUNK_SIZE = 100
 OVERLAP_SIZE = 100
-SECTION_SEPARATOR = "\n\n"
 SENTENCE_TERMINATORS = re.compile(r"(?<=[.!?])\s+")
 UNKNOWN_SECTION = "General"
 
@@ -24,22 +27,26 @@ class Chunk:
     text: str = ""
 
 
-def _detect_sections(text: str) -> list[tuple[str, str]]:
-    matches = list(HEADER_PATTERN.finditer(text))
-    if not matches:
-        return [(UNKNOWN_SECTION, text.strip())]
-    sections: list[tuple[str, str]] = []
-    if matches[0].start() > 0:
-        preamble = text[: matches[0].start()].strip()
-        if preamble:
-            sections.append((UNKNOWN_SECTION, preamble))
-    for i, match in enumerate(matches):
-        title = match.group().strip().rstrip(":")
-        title = HEADER_PREFIX.sub("", title)
-        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-        body = text[match.end() : end].strip()
-        if body:
-            sections.append((title, body))
+def _group_elements_by_section(
+    elements: list[DocumentElement],
+) -> list[tuple[str, list[str]]]:
+    sections: list[tuple[str, list[str]]] = []
+    current_title = UNKNOWN_SECTION
+    current_body: list[str] = []
+    for element in elements:
+        if element.kind in {KIND_CONTACT, KIND_TITLE}:
+            continue
+        if element.kind in {KIND_HEADING, KIND_SEPARATOR}:
+            if current_body:
+                sections.append((current_title, current_body))
+            current_title = (
+                element.text if element.kind == KIND_HEADING else UNKNOWN_SECTION
+            )
+            current_body = []
+        else:
+            current_body.append(element.text)
+    if current_body:
+        sections.append((current_title, current_body))
     return sections
 
 
@@ -51,7 +58,7 @@ def _merge_short_paragraphs(
     merged: list[str] = []
     current = paragraphs[0]
     for paragraph in paragraphs[1:]:
-        combined = current + SECTION_SEPARATOR + paragraph
+        combined = current + "\n" + paragraph
         if len(current) < min_size and len(combined) <= max_size:
             current = combined
         else:
@@ -136,16 +143,11 @@ def _add_overlap(chunks: list[str], overlap_size: int, max_size: int) -> list[st
     return result
 
 
-def chunk_document(text: str, source: str) -> list[Chunk]:
-    """Split a document into chunks with section metadata."""
-    sections = _detect_sections(text)
+def chunk_document(document: LoadedDocument) -> list[Chunk]:
+    """Split a loaded document into chunks with section metadata."""
+    sections = _group_elements_by_section(document.elements)
     chunks: list[Chunk] = []
-    for section_title, section_body in sections:
-        paragraphs = [
-            paragraph.strip()
-            for paragraph in section_body.split(SECTION_SEPARATOR)
-            if paragraph.strip()
-        ]
+    for section_title, paragraphs in sections:
         merged = _merge_short_paragraphs(paragraphs, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE)
         split: list[str] = []
         for paragraph in merged:
@@ -154,7 +156,7 @@ def chunk_document(text: str, source: str) -> list[Chunk]:
         for chunk_text in with_overlap:
             chunks.append(
                 Chunk(
-                    metadata={"section": section_title, "source": source},
+                    metadata={"section": section_title, "source": document.source},
                     text=chunk_text,
                 )
             )

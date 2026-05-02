@@ -9,8 +9,8 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 def _verify_pipeline(path: Path) -> None:
-    result = load_document(path)
-    chunks = chunk_document(result.text, result.source)
+    document = load_document(path)
+    chunks = chunk_document(document)
     assert len(chunks) > 0
     assert all(len(chunk.text) <= MAX_CHUNK_SIZE for chunk in chunks)
     assert all(chunk.metadata["source"] == path.name for chunk in chunks)
