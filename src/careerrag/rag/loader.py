@@ -66,7 +66,7 @@ def _classify_docx_paragraph(paragraph: object, text: str) -> str:
     return _classify_line(text)
 
 
-def _docx_table_to_element(table: Table) -> DocumentElement | None:
+def _convert_docx_table(table: Table) -> DocumentElement | None:
     rows: list[str] = []
     for row in table.rows:
         cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
@@ -97,7 +97,7 @@ def _load_docx(path: Path) -> list[DocumentElement]:
                 None,
             )
             if table:
-                element = _docx_table_to_element(table)
+                element = _convert_docx_table(table)
                 if element:
                     elements.append(element)
     return elements
