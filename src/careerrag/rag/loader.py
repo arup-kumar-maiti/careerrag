@@ -10,10 +10,10 @@ from docx import Document
 
 BULLET_CHARACTERS = set("●○■□▪▸►•‣◦\u2043\u2022\u2023\u25e6")
 BULLET_PATTERN = re.compile(r"^[\u2022\u2023\u25E6\u2043●○■□▪▸►\-\*]\s+")
+CONTACT_MAX_LENGTH = 200
 CONTACT_PATTERN = re.compile(
     r"[\w.+-]+@[\w-]+\.[\w.]+|https?://\S+|linkedin\.com/\S+|\+?\d[\d\s\-()]{7,}"
 )
-CONTACT_MAX_LENGTH = 200
 FONT_SIZE_RATIO_THRESHOLD = 1.15
 FONT_SIZE_TITLE_THRESHOLD = 1.4
 KIND_BODY = "body"
