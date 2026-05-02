@@ -1,11 +1,15 @@
 """Load documents from files and extract plain text."""
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 import fitz
 from docx import Document
 
+HEADING_STYLE_PREFIX = "Heading"
+MULTIPLE_SPACES = re.compile(r" {2,}")
+NOISE_CHARACTERS = re.compile(r"[\xa0\xad\u200b\ufeff]+")
 PARAGRAPH_SEPARATOR = "\n\n"
 TEXT_ENCODING = "utf-8"
 
@@ -20,16 +24,25 @@ class LoadedDocument:
 
 def _load_docx(path: Path) -> str:
     doc = Document(str(path))
-    return PARAGRAPH_SEPARATOR.join(
-        paragraph.text for paragraph in doc.paragraphs if paragraph.text.strip()
-    )
+    parts: list[str] = []
+    for paragraph in doc.paragraphs:
+        text = paragraph.text.strip()
+        if not text:
+            continue
+        if paragraph.style and paragraph.style.name.startswith(HEADING_STYLE_PREFIX):
+            parts.append(text + ":")
+        else:
+            parts.append(text)
+    return PARAGRAPH_SEPARATOR.join(parts)
 
 
 def _load_pdf(path: Path) -> str:
     doc = fitz.open(path)
     pages = [page.get_text() for page in doc]
     doc.close()
-    return PARAGRAPH_SEPARATOR.join(pages)
+    text = PARAGRAPH_SEPARATOR.join(pages)
+    text = NOISE_CHARACTERS.sub(" ", text)
+    return MULTIPLE_SPACES.sub(" ", text)
 
 
 def _load_text(path: Path) -> str:
