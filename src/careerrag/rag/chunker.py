@@ -12,12 +12,10 @@ from careerrag.rag.loader import (
     LoadedDocument,
 )
 
-BOUNDARY_KINDS = {KIND_HEADING, KIND_SEPARATOR}
 MAX_CHUNK_SIZE = 1000
 MIN_CHUNK_SIZE = 100
 OVERLAP_SIZE = 100
 SENTENCE_TERMINATORS = re.compile(r"(?<=[.!?])\s+")
-SKIP_KINDS = {KIND_CONTACT, KIND_TITLE}
 UNKNOWN_SECTION = "General"
 
 
@@ -36,9 +34,9 @@ def _group_elements_by_section(
     current_title = UNKNOWN_SECTION
     current_body: list[str] = []
     for element in elements:
-        if element.kind in SKIP_KINDS:
+        if element.kind in {KIND_CONTACT, KIND_TITLE}:
             continue
-        if element.kind in BOUNDARY_KINDS:
+        if element.kind in {KIND_HEADING, KIND_SEPARATOR}:
             if current_body:
                 sections.append((current_title, current_body))
             current_title = (

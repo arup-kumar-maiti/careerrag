@@ -8,18 +8,14 @@ from pathlib import Path
 import fitz
 from docx import Document
 
-BLOCK_TYPE_IMAGE = 1
 BULLET_CHARACTERS = set("●○■□▪▸►•‣◦\u2043\u2022\u2023\u25e6")
 BULLET_PATTERN = re.compile(r"^[\u2022\u2023\u25E6\u2043●○■□▪▸►\-\*]\s+")
-CONTACT_MAX_LENGTH = 200
 CONTACT_PATTERN = re.compile(
     r"[\w.+-]+@[\w-]+\.[\w.]+|https?://\S+|linkedin\.com/\S+|\+?\d[\d\s\-()]{7,}"
 )
-DRAWING_HEIGHT_MAX = 3.0
-DRAWING_WIDTH_RATIO_MIN = 0.5
+CONTACT_MAX_LENGTH = 200
 FONT_SIZE_RATIO_THRESHOLD = 1.15
 FONT_SIZE_TITLE_THRESHOLD = 1.4
-HEADING_STYLE_PREFIX = "Heading"
 KIND_BODY = "body"
 KIND_CONTACT = "contact"
 KIND_HEADING = "heading"
@@ -30,7 +26,6 @@ KIND_TITLE = "title"
 MULTIPLE_SPACES = re.compile(r" {2,}")
 NOISE_CHARACTERS = re.compile(r"[\xa0\xad\u200b\ufeff]+")
 SEPARATOR_PATTERN = re.compile(r"^[\-_=]{3,}\s*$")
-TEXT_ENCODING = "utf-8"
 
 
 @dataclass
@@ -65,7 +60,7 @@ def _classify_line(text: str, font_ratio: float = 1.0) -> str:
 
 def _classify_docx_paragraph(paragraph: object, text: str) -> str:
     style = getattr(paragraph, "style", None)
-    if style and style.name.startswith(HEADING_STYLE_PREFIX):
+    if style and style.name.startswith("Heading"):
         return KIND_HEADING
     return _classify_line(text)
 
@@ -103,14 +98,13 @@ def _find_body_font_size(doc: fitz.Document) -> float:
 
 
 def _find_separator_positions(page: fitz.Page) -> list[float]:
+    max_height = 3.0
+    min_width_ratio = 0.5
     positions: list[float] = []
     page_width = page.rect.width
     for drawing in page.get_drawings():
         rect = drawing["rect"]
-        if (
-            rect.height <= DRAWING_HEIGHT_MAX
-            and rect.width > page_width * DRAWING_WIDTH_RATIO_MIN
-        ):
+        if rect.height <= max_height and rect.width > page_width * min_width_ratio:
             positions.append(rect.y0)
     return sorted(positions)
 
@@ -154,14 +148,13 @@ def _load_pdf(path: Path) -> list[DocumentElement]:
     doc = fitz.open(path)
     body_size = _find_body_font_size(doc)
     elements: list[DocumentElement] = []
+    image_block_type = 1
     for page in doc:
         for _ in _find_separator_positions(page):
             elements.append(DocumentElement(kind=KIND_SEPARATOR, text=""))
         elements.extend(_extract_pdf_tables(page))
         for block in page.get_text("dict")["blocks"]:
-            if block.get("type") == BLOCK_TYPE_IMAGE:
-                continue
-            if "lines" not in block:
+            if block.get("type") == image_block_type or "lines" not in block:
                 continue
             for line in block["lines"]:
                 line_text = ""
@@ -183,7 +176,7 @@ def _load_pdf(path: Path) -> list[DocumentElement]:
 
 
 def _load_text(path: Path) -> list[DocumentElement]:
-    text = path.read_text(encoding=TEXT_ENCODING)
+    text = path.read_text(encoding="utf-8")
     elements: list[DocumentElement] = []
     for line in text.split("\n"):
         line = line.strip()

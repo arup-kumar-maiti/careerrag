@@ -10,7 +10,6 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
-APP_TITLE = "CareerRAG"
 CONTENT_TYPE_SSE = "text/event-stream"
 DONE_SIGNAL = "data: [DONE]\n\n"
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
@@ -44,7 +43,7 @@ async def _stream_mock_response() -> AsyncGenerator[str, None]:
 
 def create_app(name: str) -> FastAPI:
     """Return a configured FastAPI application."""
-    app = FastAPI(title=APP_TITLE)
+    app = FastAPI(title="CareerRAG")
     app.mount(
         "/static",
         StaticFiles(directory=FRONTEND_DIR / "static"),
