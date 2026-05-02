@@ -84,7 +84,12 @@ def _load_docx(path: Path) -> list[DocumentElement]:
             if not text:
                 continue
             paragraph = next(
-                (para for para in doc.paragraphs if para._element is item), None
+                (
+                    candidate
+                    for candidate in doc.paragraphs
+                    if candidate._element is item
+                ),
+                None,
             )
             if paragraph:
                 kind = _classify_docx_paragraph(paragraph, text)
