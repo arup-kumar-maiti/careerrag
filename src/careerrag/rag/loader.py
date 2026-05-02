@@ -141,9 +141,7 @@ def _extract_pdf_tables(
     return elements, table_rects
 
 
-def _block_inside_tables(
-    block: dict[str, object], table_rects: list[fitz.Rect]
-) -> bool:
+def _is_inside_tables(block: dict[str, object], table_rects: list[fitz.Rect]) -> bool:
     block_rect = fitz.Rect(block["bbox"])
     return any(table_rect.intersects(block_rect) for table_rect in table_rects)
 
@@ -172,7 +170,7 @@ def _extract_pdf_page_text(
     for block in page.get_text("dict")["blocks"]:
         if block.get("type") == image_block_type or "lines" not in block:
             continue
-        if _block_inside_tables(block, table_rects):
+        if _is_inside_tables(block, table_rects):
             continue
         for line in block["lines"]:
             line_text = ""
