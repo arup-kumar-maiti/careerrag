@@ -1,61 +1,200 @@
-"""Load documents from files and extract plain text."""
+"""Load documents and extract structured elements."""
 
 import re
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
 import fitz
 from docx import Document
 
+BULLET_CHARACTERS = set("●○■□▪▸►•‣◦\u2043\u2022\u2023\u25e6")
+CONTACT_MAX_LENGTH = 200
+BULLET_PATTERN = re.compile(r"^[\u2022\u2023\u25E6\u2043●○■□▪▸►\-\*]\s+")
+CONTACT_PATTERN = re.compile(
+    r"[\w.+-]+@[\w-]+\.[\w.]+|https?://\S+|linkedin\.com/\S+|\+?\d[\d\s\-()]{7,}"
+)
+DRAWING_HEIGHT_MAX = 3.0
+FONT_SIZE_RATIO_THRESHOLD = 1.15
+FONT_SIZE_TITLE_THRESHOLD = 1.4
 HEADING_STYLE_PREFIX = "Heading"
+KIND_BODY = "body"
+KIND_CONTACT = "contact"
+KIND_HEADING = "heading"
+KIND_LIST_ITEM = "list_item"
+KIND_SEPARATOR = "separator"
+KIND_TABLE = "table"
+KIND_TITLE = "title"
 MULTIPLE_SPACES = re.compile(r" {2,}")
 NOISE_CHARACTERS = re.compile(r"[\xa0\xad\u200b\ufeff]+")
-PARAGRAPH_SEPARATOR = "\n\n"
+SEPARATOR_PATTERN = re.compile(r"^[\-_=]{3,}\s*$")
 TEXT_ENCODING = "utf-8"
 
 
 @dataclass
-class LoadedDocument:
-    """Represent extracted document content with its source filename."""
+class DocumentElement:
+    """Represent a structural element of a document."""
 
-    source: str
+    kind: str
     text: str
 
 
-def _load_docx(path: Path) -> str:
+@dataclass
+class LoadedDocument:
+    """Represent a parsed document with structured elements."""
+
+    elements: list[DocumentElement]
+    source: str
+
+
+def _classify_line(text: str, font_ratio: float = 1.0) -> str:
+    if font_ratio >= FONT_SIZE_TITLE_THRESHOLD:
+        return KIND_TITLE
+    if font_ratio >= FONT_SIZE_RATIO_THRESHOLD:
+        return KIND_HEADING
+    if BULLET_PATTERN.match(text):
+        return KIND_LIST_ITEM
+    if SEPARATOR_PATTERN.match(text):
+        return KIND_SEPARATOR
+    if CONTACT_PATTERN.match(text) and len(text) < CONTACT_MAX_LENGTH:
+        return KIND_CONTACT
+    return KIND_BODY
+
+
+def _classify_docx_paragraph(paragraph: object, text: str) -> str:
+    style = getattr(paragraph, "style", None)
+    if style and style.name.startswith(HEADING_STYLE_PREFIX):
+        return KIND_HEADING
+    return _classify_line(text)
+
+
+def _load_docx(path: Path) -> list[DocumentElement]:
     doc = Document(str(path))
-    parts: list[str] = []
+    elements: list[DocumentElement] = []
     for paragraph in doc.paragraphs:
         text = paragraph.text.strip()
         if not text:
             continue
-        if paragraph.style and paragraph.style.name.startswith(HEADING_STYLE_PREFIX):
-            parts.append(text + ":")
-        else:
-            parts.append(text)
-    return PARAGRAPH_SEPARATOR.join(parts)
+        kind = _classify_docx_paragraph(paragraph, text)
+        elements.append(DocumentElement(kind=kind, text=text))
+    for table in doc.tables:
+        rows: list[str] = []
+        for row in table.rows:
+            cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+            if cells:
+                rows.append(" | ".join(cells))
+        if rows:
+            elements.append(DocumentElement(kind=KIND_TABLE, text="\n".join(rows)))
+    return elements
 
 
-def _load_pdf(path: Path) -> str:
-    doc = fitz.open(path)
-    pages = [page.get_text() for page in doc]
-    doc.close()
-    text = PARAGRAPH_SEPARATOR.join(pages)
+def _find_body_font_size(doc: fitz.Document) -> float:
+    sizes: Counter[float] = Counter()
+    for page in doc:
+        for block in page.get_text("dict")["blocks"]:
+            if "lines" not in block:
+                continue
+            for line in block["lines"]:
+                for span in line["spans"]:
+                    sizes[round(span["size"], 1)] += len(span["text"])
+    return sizes.most_common(1)[0][0] if sizes else 12.0
+
+
+def _find_separator_positions(page: fitz.Page) -> list[float]:
+    positions: list[float] = []
+    page_width = page.rect.width
+    for drawing in page.get_drawings():
+        rect = drawing["rect"]
+        if rect.height <= DRAWING_HEIGHT_MAX and rect.width > page_width * 0.5:
+            positions.append(rect.y0)
+    return sorted(positions)
+
+
+def _clean_text(text: str) -> str:
     text = NOISE_CHARACTERS.sub(" ", text)
-    return MULTIPLE_SPACES.sub(" ", text)
+    return MULTIPLE_SPACES.sub(" ", text).strip()
 
 
-def _load_text(path: Path) -> str:
-    return path.read_text(encoding=TEXT_ENCODING)
+def _extract_pdf_tables(page: fitz.Page) -> list[DocumentElement]:
+    elements: list[DocumentElement] = []
+    tables = page.find_tables()
+    for table in tables.tables:
+        rows: list[str] = []
+        for row in table.extract():
+            cells = [_clean_text(cell) for cell in row if cell and cell.strip()]
+            if cells:
+                rows.append(" | ".join(cells))
+        if rows:
+            elements.append(DocumentElement(kind=KIND_TABLE, text="\n".join(rows)))
+    return elements
+
+
+def _merge_bullets(elements: list[DocumentElement]) -> list[DocumentElement]:
+    merged: list[DocumentElement] = []
+    skip_next = False
+    for i, element in enumerate(elements):
+        if skip_next:
+            skip_next = False
+            continue
+        if element.text in BULLET_CHARACTERS and i + 1 < len(elements):
+            next_element = elements[i + 1]
+            merged.append(DocumentElement(kind=KIND_LIST_ITEM, text=next_element.text))
+            skip_next = True
+        else:
+            merged.append(element)
+    return merged
+
+
+def _load_pdf(path: Path) -> list[DocumentElement]:
+    doc = fitz.open(path)
+    body_size = _find_body_font_size(doc)
+    elements: list[DocumentElement] = []
+    for page in doc:
+        for _ in _find_separator_positions(page):
+            elements.append(DocumentElement(kind=KIND_SEPARATOR, text=""))
+        elements.extend(_extract_pdf_tables(page))
+        for block in page.get_text("dict")["blocks"]:
+            if block.get("type") == 1:
+                continue
+            if "lines" not in block:
+                continue
+            for line in block["lines"]:
+                line_text = ""
+                max_font_size = 0.0
+                for span in line["spans"]:
+                    text = span["text"].strip()
+                    if not text:
+                        continue
+                    line_text += text + " "
+                    max_font_size = max(max_font_size, span["size"])
+                line_text = _clean_text(line_text)
+                if not line_text:
+                    continue
+                font_ratio = max_font_size / body_size if body_size else 1.0
+                kind = _classify_line(line_text, font_ratio)
+                elements.append(DocumentElement(kind=kind, text=line_text))
+    doc.close()
+    return _merge_bullets(elements)
+
+
+def _load_text(path: Path) -> list[DocumentElement]:
+    text = path.read_text(encoding=TEXT_ENCODING)
+    elements: list[DocumentElement] = []
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        elements.append(DocumentElement(kind=_classify_line(line), text=line))
+    return elements
 
 
 def load_document(path: Path) -> LoadedDocument:
-    """Return the extracted text and filename from a document path."""
+    """Return structured elements and filename from a document path."""
     loaders = {
         ".docx": _load_docx,
         ".md": _load_text,
         ".pdf": _load_pdf,
         ".txt": _load_text,
     }
-    text = loaders[path.suffix.lower()](path)
-    return LoadedDocument(source=path.name, text=text)
+    elements = loaders[path.suffix.lower()](path)
+    return LoadedDocument(elements=elements, source=path.name)
