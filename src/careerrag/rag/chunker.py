@@ -13,8 +13,8 @@ from careerrag.rag.loader import (
 )
 
 MAX_CHUNK_SIZE = 1000
-MIN_CHUNK_SIZE = 100
-OVERLAP_SIZE = 100
+MAX_OVERLAP_RATIO = 0.2
+MIN_CHUNK_SIZE = 200
 SENTENCE_TERMINATORS = re.compile(r"(?<=[.!?])\s+")
 UNKNOWN_SECTION = "General"
 
@@ -124,17 +124,20 @@ def _split_oversized(text: str, max_size: int) -> list[str]:
     return _split_on_spaces(text, max_size)
 
 
-def _add_overlap(chunks: list[str], overlap_size: int, max_size: int) -> list[str]:
-    if len(chunks) <= 1 or overlap_size <= 0:
+def _add_overlap(
+    chunks: list[str], max_overlap_ratio: float, max_size: int
+) -> list[str]:
+    if len(chunks) <= 1:
         return chunks
     result: list[str] = [chunks[0]]
     for i in range(1, len(chunks)):
-        previous = chunks[i - 1]
+        overlap_budget = int(len(chunks[i]) * max_overlap_ratio)
         available = max_size - len(chunks[i]) - 1
-        capped_overlap = min(overlap_size, max(available, 0))
+        capped_overlap = min(overlap_budget, max(available, 0))
         if capped_overlap <= 0:
             result.append(chunks[i])
             continue
+        previous = chunks[i - 1]
         overlap = previous[-capped_overlap:]
         space_index = overlap.find(" ")
         if space_index >= 0:
@@ -152,7 +155,7 @@ def chunk_document(document: LoadedDocument) -> list[Chunk]:
         split: list[str] = []
         for paragraph in merged:
             split.extend(_split_oversized(paragraph, MAX_CHUNK_SIZE))
-        with_overlap = _add_overlap(split, OVERLAP_SIZE, MAX_CHUNK_SIZE)
+        with_overlap = _add_overlap(split, MAX_OVERLAP_RATIO, MAX_CHUNK_SIZE)
         for chunk_text in with_overlap:
             chunks.append(
                 Chunk(

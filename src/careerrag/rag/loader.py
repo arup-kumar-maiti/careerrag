@@ -68,20 +68,29 @@ def _classify_docx_paragraph(paragraph: object, text: str) -> str:
 def _load_docx(path: Path) -> list[DocumentElement]:
     doc = Document(str(path))
     elements: list[DocumentElement] = []
-    for paragraph in doc.paragraphs:
-        text = paragraph.text.strip()
-        if not text:
-            continue
-        kind = _classify_docx_paragraph(paragraph, text)
-        elements.append(DocumentElement(kind=kind, text=text))
-    for table in doc.tables:
-        rows: list[str] = []
-        for row in table.rows:
-            cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
-            if cells:
-                rows.append(" | ".join(cells))
-        if rows:
-            elements.append(DocumentElement(kind=KIND_TABLE, text="\n".join(rows)))
+    for item in doc.element.body:
+        if item.tag.endswith("}p"):
+            text = item.text.strip() if hasattr(item, "text") else ""
+            if not text:
+                continue
+            paragraph = next((p for p in doc.paragraphs if p._element is item), None)
+            if paragraph:
+                kind = _classify_docx_paragraph(paragraph, text)
+                elements.append(DocumentElement(kind=kind, text=text))
+        elif item.tag.endswith("}tbl"):
+            table = next((t for t in doc.tables if t._element is item), None)
+            if table:
+                rows: list[str] = []
+                for row in table.rows:
+                    cells = [
+                        cell.text.strip() for cell in row.cells if cell.text.strip()
+                    ]
+                    if cells:
+                        rows.append(" | ".join(cells))
+                if rows:
+                    elements.append(
+                        DocumentElement(kind=KIND_TABLE, text="\n".join(rows))
+                    )
     return elements
 
 
@@ -114,10 +123,14 @@ def _clean_text(text: str) -> str:
     return MULTIPLE_SPACES.sub(" ", text).strip()
 
 
-def _extract_pdf_tables(page: fitz.Page) -> list[DocumentElement]:
+def _extract_pdf_tables(
+    page: fitz.Page,
+) -> tuple[list[DocumentElement], list[fitz.Rect]]:
     elements: list[DocumentElement] = []
+    table_rects: list[fitz.Rect] = []
     tables = page.find_tables()
     for table in tables.tables:
+        table_rects.append(fitz.Rect(table.bbox))
         rows: list[str] = []
         for row in table.extract():
             cells = [_clean_text(cell) for cell in row if cell and cell.strip()]
@@ -125,7 +138,12 @@ def _extract_pdf_tables(page: fitz.Page) -> list[DocumentElement]:
                 rows.append(" | ".join(cells))
         if rows:
             elements.append(DocumentElement(kind=KIND_TABLE, text="\n".join(rows)))
-    return elements
+    return elements, table_rects
+
+
+def _block_inside_tables(block: dict, table_rects: list[fitz.Rect]) -> bool:
+    block_rect = fitz.Rect(block["bbox"])
+    return any(table_rect.intersects(block_rect) for table_rect in table_rects)
 
 
 def _merge_bullets(elements: list[DocumentElement]) -> list[DocumentElement]:
@@ -144,33 +162,47 @@ def _merge_bullets(elements: list[DocumentElement]) -> list[DocumentElement]:
     return merged
 
 
+def _extract_pdf_page_text(
+    page: fitz.Page, body_size: float, table_rects: list[fitz.Rect]
+) -> list[DocumentElement]:
+    image_block_type = 1
+    elements: list[DocumentElement] = []
+    for block in page.get_text("dict")["blocks"]:
+        if block.get("type") == image_block_type or "lines" not in block:
+            continue
+        if _block_inside_tables(block, table_rects):
+            continue
+        for line in block["lines"]:
+            line_text = ""
+            max_font_size = 0.0
+            for span in line["spans"]:
+                text = span["text"].strip()
+                if not text:
+                    continue
+                line_text += text + " "
+                max_font_size = max(max_font_size, span["size"])
+            line_text = _clean_text(line_text)
+            if not line_text:
+                continue
+            font_ratio = max_font_size / body_size if body_size else 1.0
+            elements.append(
+                DocumentElement(
+                    kind=_classify_line(line_text, font_ratio), text=line_text
+                )
+            )
+    return elements
+
+
 def _load_pdf(path: Path) -> list[DocumentElement]:
     doc = fitz.open(path)
     body_size = _find_body_font_size(doc)
     elements: list[DocumentElement] = []
-    image_block_type = 1
     for page in doc:
         for _ in _find_separator_positions(page):
             elements.append(DocumentElement(kind=KIND_SEPARATOR, text=""))
-        elements.extend(_extract_pdf_tables(page))
-        for block in page.get_text("dict")["blocks"]:
-            if block.get("type") == image_block_type or "lines" not in block:
-                continue
-            for line in block["lines"]:
-                line_text = ""
-                max_font_size = 0.0
-                for span in line["spans"]:
-                    text = span["text"].strip()
-                    if not text:
-                        continue
-                    line_text += text + " "
-                    max_font_size = max(max_font_size, span["size"])
-                line_text = _clean_text(line_text)
-                if not line_text:
-                    continue
-                font_ratio = max_font_size / body_size if body_size else 1.0
-                kind = _classify_line(line_text, font_ratio)
-                elements.append(DocumentElement(kind=kind, text=line_text))
+        table_elements, table_rects = _extract_pdf_tables(page)
+        text_elements = _extract_pdf_page_text(page, body_size, table_rects)
+        elements.extend(text_elements + table_elements)
     doc.close()
     return _merge_bullets(elements)
 
