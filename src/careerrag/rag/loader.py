@@ -66,15 +66,13 @@ def _classify_docx_paragraph(paragraph: object, text: str) -> str:
     return _classify_line(text)
 
 
-def _convert_docx_table(table: Table) -> DocumentElement | None:
+def _convert_docx_table(table: Table) -> DocumentElement:
     rows: list[str] = []
     for row in table.rows:
         cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
         if cells:
             rows.append(" | ".join(cells))
-    if rows:
-        return DocumentElement(kind=KIND_TABLE, text="\n".join(rows))
-    return None
+    return DocumentElement(kind=KIND_TABLE, text="\n".join(rows))
 
 
 def _load_docx(path: Path) -> list[DocumentElement]:
@@ -98,7 +96,7 @@ def _load_docx(path: Path) -> list[DocumentElement]:
             )
             if table:
                 element = _convert_docx_table(table)
-                if element:
+                if element.text:
                     elements.append(element)
     return elements
 
