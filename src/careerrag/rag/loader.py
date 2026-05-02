@@ -146,22 +146,6 @@ def _is_inside_tables(block: dict[str, object], table_rects: list[fitz.Rect]) ->
     return any(table_rect.intersects(block_rect) for table_rect in table_rects)
 
 
-def _merge_bullets(elements: list[DocumentElement]) -> list[DocumentElement]:
-    merged: list[DocumentElement] = []
-    skip_next = False
-    for index, element in enumerate(elements):
-        if skip_next:
-            skip_next = False
-            continue
-        if element.text in BULLET_CHARACTERS and index + 1 < len(elements):
-            next_element = elements[index + 1]
-            merged.append(DocumentElement(kind=KIND_LIST_ITEM, text=next_element.text))
-            skip_next = True
-        else:
-            merged.append(element)
-    return merged
-
-
 def _extract_pdf_page_text(
     page: fitz.Page, body_size: float, table_rects: list[fitz.Rect]
 ) -> list[DocumentElement]:
@@ -191,6 +175,22 @@ def _extract_pdf_page_text(
                 )
             )
     return elements
+
+
+def _merge_bullets(elements: list[DocumentElement]) -> list[DocumentElement]:
+    merged: list[DocumentElement] = []
+    skip_next = False
+    for index, element in enumerate(elements):
+        if skip_next:
+            skip_next = False
+            continue
+        if element.text in BULLET_CHARACTERS and index + 1 < len(elements):
+            next_element = elements[index + 1]
+            merged.append(DocumentElement(kind=KIND_LIST_ITEM, text=next_element.text))
+            skip_next = True
+        else:
+            merged.append(element)
+    return merged
 
 
 def _load_pdf(path: Path) -> list[DocumentElement]:
