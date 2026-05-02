@@ -8,13 +8,15 @@ from pathlib import Path
 import fitz
 from docx import Document
 
+BLOCK_TYPE_IMAGE = 1
 BULLET_CHARACTERS = set("●○■□▪▸►•‣◦\u2043\u2022\u2023\u25e6")
-CONTACT_MAX_LENGTH = 200
 BULLET_PATTERN = re.compile(r"^[\u2022\u2023\u25E6\u2043●○■□▪▸►\-\*]\s+")
+CONTACT_MAX_LENGTH = 200
 CONTACT_PATTERN = re.compile(
     r"[\w.+-]+@[\w-]+\.[\w.]+|https?://\S+|linkedin\.com/\S+|\+?\d[\d\s\-()]{7,}"
 )
 DRAWING_HEIGHT_MAX = 3.0
+DRAWING_WIDTH_RATIO_MIN = 0.5
 FONT_SIZE_RATIO_THRESHOLD = 1.15
 FONT_SIZE_TITLE_THRESHOLD = 1.4
 HEADING_STYLE_PREFIX = "Heading"
@@ -105,7 +107,10 @@ def _find_separator_positions(page: fitz.Page) -> list[float]:
     page_width = page.rect.width
     for drawing in page.get_drawings():
         rect = drawing["rect"]
-        if rect.height <= DRAWING_HEIGHT_MAX and rect.width > page_width * 0.5:
+        if (
+            rect.height <= DRAWING_HEIGHT_MAX
+            and rect.width > page_width * DRAWING_WIDTH_RATIO_MIN
+        ):
             positions.append(rect.y0)
     return sorted(positions)
 
@@ -132,12 +137,12 @@ def _extract_pdf_tables(page: fitz.Page) -> list[DocumentElement]:
 def _merge_bullets(elements: list[DocumentElement]) -> list[DocumentElement]:
     merged: list[DocumentElement] = []
     skip_next = False
-    for i, element in enumerate(elements):
+    for index, element in enumerate(elements):
         if skip_next:
             skip_next = False
             continue
-        if element.text in BULLET_CHARACTERS and i + 1 < len(elements):
-            next_element = elements[i + 1]
+        if element.text in BULLET_CHARACTERS and index + 1 < len(elements):
+            next_element = elements[index + 1]
             merged.append(DocumentElement(kind=KIND_LIST_ITEM, text=next_element.text))
             skip_next = True
         else:
@@ -154,7 +159,7 @@ def _load_pdf(path: Path) -> list[DocumentElement]:
             elements.append(DocumentElement(kind=KIND_SEPARATOR, text=""))
         elements.extend(_extract_pdf_tables(page))
         for block in page.get_text("dict")["blocks"]:
-            if block.get("type") == 1:
+            if block.get("type") == BLOCK_TYPE_IMAGE:
                 continue
             if "lines" not in block:
                 continue
