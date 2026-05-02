@@ -1,1 +1,1 @@
-"""careerrag.server — HTTP interface for the chat application."""
+"""Serve the CareerRAG chat application over HTTP."""

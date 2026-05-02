@@ -1,1 +1,1 @@
-"""careerrag.rag — document processing and retrieval pipeline."""
+"""Expose RAG pipeline components."""

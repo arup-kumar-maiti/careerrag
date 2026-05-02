@@ -1,1 +1,1 @@
-"""careerrag — RAG-powered chat interface for career profiles."""
+"""Provide a RAG-powered chat interface for professional documents."""
