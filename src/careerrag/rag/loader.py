@@ -7,6 +7,7 @@ from pathlib import Path
 
 import fitz
 from docx import Document
+from docx.table import Table
 
 BULLET_CHARACTERS = set("●○■□▪▸►•‣◦\u2043\u2022\u2023\u25e6")
 BULLET_PATTERN = re.compile(r"^[\u2022\u2023\u25E6\u2043●○■□▪▸►\-\*]\s+")
@@ -65,6 +66,17 @@ def _classify_docx_paragraph(paragraph: object, text: str) -> str:
     return _classify_line(text)
 
 
+def _docx_table_to_element(table: Table) -> DocumentElement | None:
+    rows: list[str] = []
+    for row in table.rows:
+        cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+        if cells:
+            rows.append(" | ".join(cells))
+    if rows:
+        return DocumentElement(kind=KIND_TABLE, text="\n".join(rows))
+    return None
+
+
 def _load_docx(path: Path) -> list[DocumentElement]:
     doc = Document(str(path))
     elements: list[DocumentElement] = []
@@ -73,24 +85,21 @@ def _load_docx(path: Path) -> list[DocumentElement]:
             text = item.text.strip() if hasattr(item, "text") else ""
             if not text:
                 continue
-            paragraph = next((p for p in doc.paragraphs if p._element is item), None)
+            paragraph = next(
+                (para for para in doc.paragraphs if para._element is item), None
+            )
             if paragraph:
                 kind = _classify_docx_paragraph(paragraph, text)
                 elements.append(DocumentElement(kind=kind, text=text))
         elif item.tag.endswith("}tbl"):
-            table = next((t for t in doc.tables if t._element is item), None)
+            table = next(
+                (doc_table for doc_table in doc.tables if doc_table._element is item),
+                None,
+            )
             if table:
-                rows: list[str] = []
-                for row in table.rows:
-                    cells = [
-                        cell.text.strip() for cell in row.cells if cell.text.strip()
-                    ]
-                    if cells:
-                        rows.append(" | ".join(cells))
-                if rows:
-                    elements.append(
-                        DocumentElement(kind=KIND_TABLE, text="\n".join(rows))
-                    )
+                element = _docx_table_to_element(table)
+                if element:
+                    elements.append(element)
     return elements
 
 
