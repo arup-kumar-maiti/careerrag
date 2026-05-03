@@ -3,14 +3,8 @@
 import re
 from dataclasses import dataclass, field
 
-from careerrag.rag.loader import (
-    KIND_CONTACT,
-    KIND_HEADING,
-    KIND_SEPARATOR,
-    KIND_TITLE,
-    DocumentElement,
-    LoadedDocument,
-)
+from careerrag.rag.constant import KIND_HEADING
+from careerrag.rag.loader import DocumentElement, LoadedDocument
 
 MAX_CHUNK_SIZE = 1000
 MAX_OVERLAP_RATIO = 0.2
@@ -34,14 +28,10 @@ def _group_elements_by_section(
     current_title = UNKNOWN_SECTION
     current_body: list[str] = []
     for element in elements:
-        if element.kind in {KIND_CONTACT, KIND_TITLE}:
-            continue
-        if element.kind in {KIND_HEADING, KIND_SEPARATOR}:
+        if element.kind == KIND_HEADING:
             if current_body:
                 sections.append((current_title, current_body))
-            current_title = (
-                element.text if element.kind == KIND_HEADING else UNKNOWN_SECTION
-            )
+            current_title = element.text
             current_body = []
         else:
             current_body.append(element.text)
@@ -68,11 +58,6 @@ def _merge_short_paragraphs(
     return merged
 
 
-def _split_on_sentences(text: str) -> list[str]:
-    parts = SENTENCE_TERMINATORS.split(text)
-    return [part.strip() for part in parts if part.strip()]
-
-
 def _group_parts(parts: list[str], max_size: int) -> list[str]:
     if not parts:
         return []
@@ -90,35 +75,24 @@ def _group_parts(parts: list[str], max_size: int) -> list[str]:
     return chunks
 
 
-def _split_on_lines(text: str) -> list[str]:
-    return [line.strip() for line in text.split("\n") if line.strip()]
-
-
 def _split_on_spaces(text: str, max_size: int) -> list[str]:
     words = text.split(" ")
     if len(words) <= 1:
         return [text[i : i + max_size] for i in range(0, len(text), max_size)]
-    chunks: list[str] = []
-    current = words[0]
-    for word in words[1:]:
-        combined = current + " " + word
-        if len(combined) <= max_size:
-            current = combined
-        else:
-            chunks.append(current)
-            current = word
-    if current:
-        chunks.append(current)
-    return chunks
+    return _group_parts(words, max_size)
 
 
 def _split_oversized(text: str, max_size: int) -> list[str]:
     if len(text) <= max_size:
         return [text]
-    sentences = _split_on_sentences(text)
+    sentences = [
+        sentence.strip()
+        for sentence in SENTENCE_TERMINATORS.split(text)
+        if sentence.strip()
+    ]
     if len(sentences) > 1:
         return _group_parts(sentences, max_size)
-    lines = _split_on_lines(text)
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
     if len(lines) > 1:
         return _group_parts(lines, max_size)
     return _split_on_spaces(text, max_size)
