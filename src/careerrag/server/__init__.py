@@ -1,1 +1,1 @@
-"""Serve the CareerRAG chat application over HTTP."""
+"""Expose the CareerRAG HTTP server."""

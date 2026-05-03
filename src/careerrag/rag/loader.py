@@ -2,7 +2,6 @@
 
 import html
 import re
-from dataclasses import dataclass
 from pathlib import Path
 
 from docling.datamodel.base_models import InputFormat
@@ -10,7 +9,14 @@ from docling.document_converter import DocumentConverter
 from docling_core.types.doc.document import DoclingDocument, TableItem
 from docling_core.types.doc.labels import DocItemLabel
 
-from careerrag.rag.constant import KIND_BODY, KIND_CONTACT, KIND_HEADING, KIND_LIST_ITEM
+from careerrag.rag.util import (
+    KIND_BODY,
+    KIND_CONTACT,
+    KIND_HEADING,
+    KIND_LIST_ITEM,
+    DocumentElement,
+    LoadedDocument,
+)
 
 CONTACT_MAX_LENGTH = 200
 CONTACT_PATTERN = re.compile(
@@ -21,22 +27,6 @@ DOCLING_LABEL_MAP: dict[DocItemLabel | None, str] = {
     DocItemLabel.SECTION_HEADER: KIND_HEADING,
     DocItemLabel.TITLE: KIND_HEADING,
 }
-
-
-@dataclass
-class DocumentElement:
-    """Represent a structural element of a document."""
-
-    kind: str
-    text: str
-
-
-@dataclass
-class LoadedDocument:
-    """Represent a parsed document with structured elements."""
-
-    elements: list[DocumentElement]
-    source: str
 
 
 def _extract_elements(document: DoclingDocument) -> list[DocumentElement]:
@@ -63,14 +53,14 @@ def _extract_elements(document: DoclingDocument) -> list[DocumentElement]:
 def _load_file(path: Path) -> list[DocumentElement]:
     converter = DocumentConverter()
     result = converter.convert(str(path))
-    return _extract_elements(result.document)
+    return _extract_elements(document=result.document)
 
 
 def _load_text(path: Path) -> list[DocumentElement]:
     text = path.read_text(encoding="utf-8")
     converter = DocumentConverter(allowed_formats=[InputFormat.MD])
     result = converter.convert_string(text, InputFormat.MD)
-    return _extract_elements(result.document)
+    return _extract_elements(document=result.document)
 
 
 def load_document(path: Path) -> LoadedDocument:

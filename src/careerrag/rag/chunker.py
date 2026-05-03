@@ -1,24 +1,21 @@
 """Split structured document elements into searchable chunks."""
 
 import re
-from dataclasses import dataclass, field
 
-from careerrag.rag.constant import KIND_HEADING, METADATA_SECTION, METADATA_SOURCE
-from careerrag.rag.loader import DocumentElement, LoadedDocument
+from careerrag.rag.util import (
+    KIND_HEADING,
+    METADATA_SECTION,
+    METADATA_SOURCE,
+    Chunk,
+    DocumentElement,
+    LoadedDocument,
+)
 
 MAX_CHUNK_SIZE = 1000
 MAX_OVERLAP_RATIO = 0.2
 MIN_CHUNK_SIZE = 200
 SENTENCE_TERMINATORS = re.compile(r"(?<=[.!?])\s+")
 UNKNOWN_SECTION = "General"
-
-
-@dataclass
-class Chunk:
-    """Represent a document chunk with metadata."""
-
-    metadata: dict[str, str] = field(default_factory=dict)
-    text: str = ""
 
 
 def _group_elements_by_section(
@@ -79,7 +76,7 @@ def _split_on_spaces(text: str, max_size: int) -> list[str]:
     words = text.split(" ")
     if len(words) <= 1:
         return [text[i : i + max_size] for i in range(0, len(text), max_size)]
-    return _group_parts(words, max_size)
+    return _group_parts(parts=words, max_size=max_size)
 
 
 def _split_oversized(text: str, max_size: int) -> list[str]:
@@ -91,11 +88,11 @@ def _split_oversized(text: str, max_size: int) -> list[str]:
         if sentence.strip()
     ]
     if len(sentences) > 1:
-        return _group_parts(sentences, max_size)
+        return _group_parts(parts=sentences, max_size=max_size)
     lines = [line.strip() for line in text.split("\n") if line.strip()]
     if len(lines) > 1:
-        return _group_parts(lines, max_size)
-    return _split_on_spaces(text, max_size)
+        return _group_parts(parts=lines, max_size=max_size)
+    return _split_on_spaces(text=text, max_size=max_size)
 
 
 def _add_overlap(
@@ -122,14 +119,18 @@ def _add_overlap(
 
 def chunk_document(document: LoadedDocument) -> list[Chunk]:
     """Split a loaded document into chunks with section metadata."""
-    sections = _group_elements_by_section(document.elements)
+    sections = _group_elements_by_section(elements=document.elements)
     chunks: list[Chunk] = []
     for section_title, paragraphs in sections:
-        merged = _merge_short_paragraphs(paragraphs, MIN_CHUNK_SIZE, MAX_CHUNK_SIZE)
+        merged = _merge_short_paragraphs(
+            paragraphs=paragraphs, min_size=MIN_CHUNK_SIZE, max_size=MAX_CHUNK_SIZE
+        )
         split: list[str] = []
         for paragraph in merged:
-            split.extend(_split_oversized(paragraph, MAX_CHUNK_SIZE))
-        with_overlap = _add_overlap(split, MAX_OVERLAP_RATIO, MAX_CHUNK_SIZE)
+            split.extend(_split_oversized(text=paragraph, max_size=MAX_CHUNK_SIZE))
+        with_overlap = _add_overlap(
+            chunks=split, max_overlap_ratio=MAX_OVERLAP_RATIO, max_size=MAX_CHUNK_SIZE
+        )
         for chunk_text in with_overlap:
             chunks.append(
                 Chunk(
