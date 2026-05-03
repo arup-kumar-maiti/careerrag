@@ -3,7 +3,7 @@
 import re
 from dataclasses import dataclass, field
 
-from careerrag.rag.constant import KIND_HEADING
+from careerrag.rag.constant import KIND_HEADING, METADATA_SECTION, METADATA_SOURCE
 from careerrag.rag.loader import DocumentElement, LoadedDocument
 
 MAX_CHUNK_SIZE = 1000
@@ -133,7 +133,10 @@ def chunk_document(document: LoadedDocument) -> list[Chunk]:
         for chunk_text in with_overlap:
             chunks.append(
                 Chunk(
-                    metadata={"section": section_title, "source": document.source},
+                    metadata={
+                        METADATA_SECTION: section_title,
+                        METADATA_SOURCE: document.source,
+                    },
                     text=chunk_text,
                 )
             )
