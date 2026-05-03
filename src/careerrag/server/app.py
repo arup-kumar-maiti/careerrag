@@ -1,24 +1,23 @@
-"""Serve the CareerRAG chat application."""
+"""Define the CareerRAG web application."""
 
-import asyncio
 from collections.abc import AsyncGenerator
+from dataclasses import dataclass, field
 from pathlib import Path
 
+import chromadb
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
+from careerrag.config import SETTING_MODEL, SETTING_PROVIDER, load_setting
+from careerrag.rag.pipeline import stream_response
+
 CONTENT_TYPE_SSE = "text/event-stream"
 DONE_SIGNAL = "data: [DONE]\n\n"
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
-MOCK_RESPONSE = (
-    "This is a placeholder response streamed from the backend. "
-    "Once the RAG pipeline is connected, answers will be grounded "
-    "in the uploaded documents."
-)
-STREAM_CHUNK_DELAY = 0.02
+SSE_DATA_FORMAT = "data: {}\n\n"
 
 
 class ChatRequest(BaseModel):
@@ -27,26 +26,33 @@ class ChatRequest(BaseModel):
     message: str
 
 
-def _render_template(environment: Environment, name: str) -> str:
-    template = environment.get_template("chat.html")
-    return template.render(name=name)
+@dataclass
+class ServerConfig:
+    """Represent the server runtime configuration."""
+
+    collection: chromadb.Collection
+    name: str
+    model: str = field(default_factory=lambda: load_setting(name=SETTING_MODEL))
+    provider: str = field(default_factory=lambda: load_setting(name=SETTING_PROVIDER))
 
 
-async def _stream_mock_response() -> AsyncGenerator[str, None]:
-    words = MOCK_RESPONSE.split(" ")
-    for i, word in enumerate(words):
-        token = word if i == 0 else " " + word
-        yield f"data: {token}\n\n"
-        await asyncio.sleep(STREAM_CHUNK_DELAY)
+async def _format_sse(question: str, config: ServerConfig) -> AsyncGenerator[str, None]:
+    async for token in stream_response(
+        collection=config.collection,
+        question=question,
+        provider=config.provider,
+        model=config.model,
+    ):
+        yield SSE_DATA_FORMAT.format(token)
     yield DONE_SIGNAL
 
 
-def create_app(name: str) -> FastAPI:
-    """Return a configured FastAPI application."""
+def create_app(config: ServerConfig) -> FastAPI:
+    """Return a FastAPI application wired to the RAG pipeline."""
     app = FastAPI(title="CareerRAG")
     app.mount(
-        "/static",
-        StaticFiles(directory=FRONTEND_DIR / "static"),
+        path="/static",
+        app=StaticFiles(directory=FRONTEND_DIR / "static"),
         name="static",
     )
 
@@ -57,12 +63,12 @@ def create_app(name: str) -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     async def render_index() -> str:
-        return _render_template(templates, name)
+        return templates.get_template("chat.html").render(name=config.name)
 
     @app.post("/api/chat")
     async def handle_chat(request: ChatRequest) -> StreamingResponse:
         return StreamingResponse(
-            _stream_mock_response(),
+            content=_format_sse(question=request.message, config=config),
             media_type=CONTENT_TYPE_SSE,
         )
 

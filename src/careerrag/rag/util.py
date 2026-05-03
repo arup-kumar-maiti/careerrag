@@ -2,12 +2,15 @@
 
 from dataclasses import dataclass, field
 
+DEFAULT_STORE_PATH = ".careerrag/store"
 KIND_BODY = "body"
 KIND_CONTACT = "contact"
 KIND_HEADING = "heading"
 KIND_LIST_ITEM = "list_item"
 METADATA_SECTION = "section"
 METADATA_SOURCE = "source"
+PROVIDER_CLAUDE = "claude"
+PROVIDER_OLLAMA = "ollama"
 
 
 @dataclass

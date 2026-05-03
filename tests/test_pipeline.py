@@ -6,7 +6,7 @@ from pathlib import Path
 import chromadb
 
 from careerrag.rag.chunker import MAX_CHUNK_SIZE, chunk_document
-from careerrag.rag.indexer import create_collection, index_chunks, remove_source
+from careerrag.rag.indexer import get_or_create_collection, index_chunks, remove_source
 from careerrag.rag.loader import load_document
 from careerrag.rag.retriever import RetrievalConfig, query_chunks
 from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE
@@ -53,7 +53,7 @@ def _verify_pipeline(path: Path) -> None:
     sections = {chunk.metadata[METADATA_SECTION] for chunk in chunks}
     assert len(sections) > 1
     with tempfile.TemporaryDirectory() as store_path:
-        collection = create_collection(path=store_path)
+        collection = get_or_create_collection(path=store_path)
         index_chunks(collection=collection, chunks=chunks)
         _verify_retrieval(collection=collection, source=path.name)
         index_chunks(collection=collection, chunks=chunks)
