@@ -17,7 +17,9 @@ def fuse_rankings(ranked_lists: list[list[ScoredChunk]]) -> list[ScoredChunk]:
             fusion_scores[chunk_id] = fusion_scores.get(chunk_id, 0.0) + 1 / (
                 RANK_SMOOTHING_FACTOR + rank
             )
-    sorted_ids = sorted(fusion_scores, key=lambda cid: fusion_scores[cid], reverse=True)
+    sorted_ids = sorted(
+        fusion_scores, key=lambda chunk_id: fusion_scores[chunk_id], reverse=True
+    )
     return [
         ScoredChunk(
             chunk=chunk_map[chunk_id].chunk,

@@ -47,12 +47,14 @@ def build_scored_chunk(
     metadata: object, text: object, embedding: object, score: float
 ) -> ScoredChunk:
     """Return a ScoredChunk from raw ChromaDB result fields."""
-    meta = (
+    parsed_metadata = (
         {key: str(value) for key, value in metadata.items()}
         if isinstance(metadata, dict)
         else {}
     )
-    embed = list(embedding) if isinstance(embedding, list) else []
+    parsed_embedding = list(embedding) if isinstance(embedding, list) else []
     return ScoredChunk(
-        chunk=Chunk(metadata=meta, text=str(text)), embedding=embed, score=score
+        chunk=Chunk(metadata=parsed_metadata, text=str(text)),
+        embedding=parsed_embedding,
+        score=score,
     )

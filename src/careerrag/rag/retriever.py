@@ -17,9 +17,9 @@ class RetrievalConfig:
     """Control retrieval pipeline stages and parameters."""
 
     candidate_count: int = 20
-    keyword_enabled: bool = True
-    diversity_weight: float = 0.5
     diversity_enabled: bool = True
+    diversity_weight: float = 0.5
+    keyword_enabled: bool = True
     rerank_candidate_count: int = 10
     rerank_enabled: bool = False
     result_count: int = 5
