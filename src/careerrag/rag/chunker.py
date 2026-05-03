@@ -85,7 +85,11 @@ def _split_on_spaces(text: str, max_size: int) -> list[str]:
 def _split_oversized(text: str, max_size: int) -> list[str]:
     if len(text) <= max_size:
         return [text]
-    sentences = [s.strip() for s in SENTENCE_TERMINATORS.split(text) if s.strip()]
+    sentences = [
+        sentence.strip()
+        for sentence in SENTENCE_TERMINATORS.split(text)
+        if sentence.strip()
+    ]
     if len(sentences) > 1:
         return _group_parts(sentences, max_size)
     lines = [line.strip() for line in text.split("\n") if line.strip()]
