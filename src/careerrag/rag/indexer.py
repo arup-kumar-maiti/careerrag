@@ -5,13 +5,17 @@ from typing import TYPE_CHECKING, cast
 
 import chromadb
 
-from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, Chunk
+from careerrag.rag.util import (
+    DEFAULT_STORE_PATH,
+    METADATA_SECTION,
+    METADATA_SOURCE,
+    Chunk,
+)
 
 if TYPE_CHECKING:
     from chromadb.api.types import Metadata
 
 COLLECTION_NAME = "career_chunks"
-DEFAULT_STORE_PATH = ".careerrag/store"
 
 
 def get_or_create_collection(path: str = DEFAULT_STORE_PATH) -> chromadb.Collection:

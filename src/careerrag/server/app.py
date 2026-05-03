@@ -17,6 +17,7 @@ from careerrag.rag.pipeline import stream_response
 CONTENT_TYPE_SSE = "text/event-stream"
 DONE_SIGNAL = "data: [DONE]\n\n"
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+SSE_DATA_FORMAT = "data: {}\n\n"
 
 
 class ChatRequest(BaseModel):
@@ -42,7 +43,7 @@ async def _format_sse(question: str, config: ServerConfig) -> AsyncGenerator[str
         provider=config.provider,
         model=config.model,
     ):
-        yield f"data: {token}\n\n"
+        yield SSE_DATA_FORMAT.format(token)
     yield DONE_SIGNAL
 
 
@@ -50,8 +51,8 @@ def create_app(config: ServerConfig) -> FastAPI:
     """Return a FastAPI application wired to the RAG pipeline."""
     app = FastAPI(title="CareerRAG")
     app.mount(
-        "/static",
-        StaticFiles(directory=FRONTEND_DIR / "static"),
+        path="/static",
+        app=StaticFiles(directory=FRONTEND_DIR / "static"),
         name="static",
     )
 
@@ -67,7 +68,7 @@ def create_app(config: ServerConfig) -> FastAPI:
     @app.post("/api/chat")
     async def handle_chat(request: ChatRequest) -> StreamingResponse:
         return StreamingResponse(
-            _format_sse(question=request.message, config=config),
+            content=_format_sse(question=request.message, config=config),
             media_type=CONTENT_TYPE_SSE,
         )
 

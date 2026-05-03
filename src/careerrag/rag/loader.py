@@ -59,7 +59,7 @@ def _load_file(path: Path) -> list[DocumentElement]:
 def _load_text(path: Path) -> list[DocumentElement]:
     text = path.read_text(encoding="utf-8")
     converter = DocumentConverter(allowed_formats=[InputFormat.MD])
-    result = converter.convert_string(text, InputFormat.MD)
+    result = converter.convert_string(content=text, format=InputFormat.MD)
     return _extract_elements(document=result.document)
 
 

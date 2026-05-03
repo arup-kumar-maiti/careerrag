@@ -14,15 +14,14 @@ from careerrag.config import (
     save_setting,
 )
 from careerrag.rag.chunker import chunk_document
-from careerrag.rag.generator import PROVIDER_CLAUDE, PROVIDER_OLLAMA
 from careerrag.rag.indexer import get_or_create_collection, index_chunks
 from careerrag.rag.loader import load_document
 from careerrag.rag.pipeline import stream_response
+from careerrag.rag.util import DEFAULT_STORE_PATH, PROVIDER_CLAUDE, PROVIDER_OLLAMA
 from careerrag.server.app import ServerConfig, create_app
 
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8000
-DEFAULT_STORE_PATH = ".careerrag/store"
 SUPPORTED_EXTENSIONS = {".docx", ".md", ".pdf", ".txt"}
 
 cli = typer.Typer(help="RAG-powered chat interface for career profiles")
@@ -94,7 +93,7 @@ def serve(
         raise typer.Exit(code=1)
     config = ServerConfig(collection=collection, name=name)
     web_app = create_app(config=config)
-    uvicorn.run(web_app, host=DEFAULT_HOST, port=DEFAULT_PORT)
+    uvicorn.run(app=web_app, host=DEFAULT_HOST, port=DEFAULT_PORT)
 
 
 cli()

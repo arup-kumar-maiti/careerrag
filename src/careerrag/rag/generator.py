@@ -7,13 +7,12 @@ import httpx
 from anthropic import AsyncAnthropic
 
 from careerrag.config import SETTING_ANTHROPIC_API_KEY, load_setting
+from careerrag.rag.util import PROVIDER_CLAUDE, PROVIDER_OLLAMA
 
 DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514"
 DEFAULT_OLLAMA_MODEL = "llama3.2"
 MAX_RESPONSE_TOKENS = 4096
 OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
-PROVIDER_CLAUDE = "claude"
-PROVIDER_OLLAMA = "ollama"
 
 
 async def _stream_ollama(
@@ -51,7 +50,7 @@ async def _stream_claude(
         model=model,
         max_tokens=MAX_RESPONSE_TOKENS,
         system=system,
-        messages=[{"role": "user", "content": message}],
+        messages=[{"content": message, "role": "user"}],
     ) as stream:
         async for token in stream.text_stream:
             yield token
