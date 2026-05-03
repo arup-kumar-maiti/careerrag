@@ -14,7 +14,7 @@ COLLECTION_NAME = "career_chunks"
 DEFAULT_STORE_PATH = ".careerrag/store"
 
 
-def create_collection(path: str = DEFAULT_STORE_PATH) -> chromadb.Collection:
+def get_or_create_collection(path: str = DEFAULT_STORE_PATH) -> chromadb.Collection:
     """Return a ChromaDB collection backed by persistent storage at the given path."""
     client = chromadb.PersistentClient(path=path)
     return client.get_or_create_collection(name=COLLECTION_NAME)

@@ -10,11 +10,15 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
 ]
 dependencies = [
+  "anthropic>=0.97",
   "chromadb>=1.5",
   "docling>=2.92",
   "fastapi>=0.136",
+  "httpx>=0.28",
   "jinja2>=3.1",
+  "keyring>=25.6",
   "rank-bm25>=0.2",
+  "typer>=0.21",
   "uvicorn[standard]>=0.46",
 ]
 description = "RAG-powered chat interface for career profiles"
