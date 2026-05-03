@@ -14,11 +14,11 @@ def _compute_similarity(embedding_a: list[float], embedding_b: list[float]) -> f
     return dot_product / (norm_a * norm_b)
 
 
-def _compute_mmr_score(
+def _score_candidate_diversity(
     candidate: ScoredChunk,
     selected: list[ScoredChunk],
     query_embedding: list[float],
-    diversity_lambda: float,
+    diversity_weight: float,
 ) -> float:
     relevance = _compute_similarity(
         embedding_a=query_embedding, embedding_b=candidate.embedding
@@ -27,16 +27,16 @@ def _compute_mmr_score(
         _compute_similarity(embedding_a=candidate.embedding, embedding_b=pick.embedding)
         for pick in selected
     )
-    return diversity_lambda * relevance - (1 - diversity_lambda) * redundancy
+    return diversity_weight * relevance - (1 - diversity_weight) * redundancy
 
 
-def select_mmr(
+def diversify_candidates(
     candidates: list[ScoredChunk],
     query_embedding: list[float],
     limit: int,
-    diversity_lambda: float,
+    diversity_weight: float,
 ) -> list[ScoredChunk]:
-    """Select diverse results by relevance and novelty."""
+    """Select diverse candidates by relevance and novelty."""
     if len(candidates) <= limit:
         return candidates
     selected: list[ScoredChunk] = []
@@ -47,11 +47,11 @@ def select_mmr(
     while len(selected) < limit and remaining:
         best_index = max(
             remaining,
-            key=lambda i: _compute_mmr_score(
+            key=lambda i: _score_candidate_diversity(
                 candidate=candidates[i],
                 selected=selected,
                 query_embedding=query_embedding,
-                diversity_lambda=diversity_lambda,
+                diversity_weight=diversity_weight,
             ),
         )
         selected.append(candidates[best_index])

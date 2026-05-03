@@ -25,7 +25,7 @@ def _load_cross_encoder() -> Any:
 def rerank_chunks(
     question: str, candidates: list[ScoredChunk], limit: int
 ) -> list[ScoredChunk]:
-    """Rescore candidates with a cross-encoder and return the top results."""
+    """Rescore candidates with a cross-encoder and return the top candidates."""
     cross_encoder = _load_cross_encoder()
     pairs = [[question, scored.chunk.text] for scored in candidates]
     scores: list[float] = cross_encoder.predict(pairs).tolist()

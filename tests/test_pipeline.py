@@ -13,13 +13,13 @@ from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 FULL_PIPELINE_CONFIG = RetrievalConfig(
-    mmr_enabled=True, rerank_enabled=True, result_count=3
+    diversity_enabled=True, rerank_enabled=True, result_count=3
 )
 SINGLE_RESULT_CONFIG = RetrievalConfig(
-    mmr_enabled=False, rerank_enabled=False, result_count=1
+    diversity_enabled=False, rerank_enabled=False, result_count=1
 )
 VECTOR_ONLY_CONFIG = RetrievalConfig(
-    keyword_enabled=False, mmr_enabled=False, rerank_enabled=False, result_count=3
+    keyword_enabled=False, diversity_enabled=False, rerank_enabled=False, result_count=3
 )
 
 

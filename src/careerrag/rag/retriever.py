@@ -7,7 +7,7 @@ import chromadb
 from careerrag.rag.fusion import fuse_rankings
 from careerrag.rag.keyword import search_keyword
 from careerrag.rag.reranker import rerank_chunks
-from careerrag.rag.selector import select_mmr
+from careerrag.rag.selector import diversify_candidates
 from careerrag.rag.util import Chunk, ScoredChunk
 from careerrag.rag.vector import search_vector
 
@@ -18,8 +18,8 @@ class RetrievalConfig:
 
     candidate_count: int = 20
     keyword_enabled: bool = True
-    mmr_diversity_weight: float = 0.5
-    mmr_enabled: bool = True
+    diversity_weight: float = 0.5
+    diversity_enabled: bool = True
     rerank_candidate_count: int = 10
     rerank_enabled: bool = False
     result_count: int = 5
@@ -61,12 +61,12 @@ def query_chunks(
             candidates=candidates,
             limit=config.rerank_candidate_count,
         )
-    if config.mmr_enabled and candidates and candidates[0].embedding:
-        candidates = select_mmr(
+    if config.diversity_enabled and candidates and candidates[0].embedding:
+        candidates = diversify_candidates(
             candidates=candidates,
             query_embedding=candidates[0].embedding,
             limit=config.result_count,
-            diversity_lambda=config.mmr_diversity_weight,
+            diversity_weight=config.diversity_weight,
         )
     else:
         candidates = candidates[: config.result_count]
