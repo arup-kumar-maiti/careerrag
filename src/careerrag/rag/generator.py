@@ -14,34 +14,6 @@ DEFAULT_OLLAMA_MODEL = "llama3.2"
 MAX_RESPONSE_TOKENS = 4096
 
 
-async def _stream_ollama(
-    system: str, message: str, model: str
-) -> AsyncGenerator[str, None]:
-    config = load_config()
-    ollama_url = str(config["ollama_url"])
-    async with (
-        httpx.AsyncClient() as client,
-        client.stream(
-            method="POST",
-            url=ollama_url,
-            json={
-                "messages": [
-                    {"content": system, "role": "system"},
-                    {"content": message, "role": "user"},
-                ],
-                "model": model,
-                "stream": True,
-            },
-        ) as response,
-    ):
-        async for line in response.aiter_lines():
-            if line:
-                chunk = json.loads(line)
-                token = chunk.get("message", {}).get("content", "")
-                if token:
-                    yield token
-
-
 async def _stream_claude(
     system: str, message: str, model: str
 ) -> AsyncGenerator[str, None]:
@@ -54,6 +26,35 @@ async def _stream_claude(
     ) as stream:
         async for token in stream.text_stream:
             yield token
+
+
+def _build_ollama_payload(system: str, message: str, model: str) -> dict[str, object]:
+    return {
+        "messages": [
+            {"content": system, "role": "system"},
+            {"content": message, "role": "user"},
+        ],
+        "model": model,
+        "stream": True,
+    }
+
+
+async def _stream_ollama(
+    system: str, message: str, model: str
+) -> AsyncGenerator[str, None]:
+    config = load_config()
+    ollama_url = str(config["ollama_url"])
+    payload = _build_ollama_payload(system=system, message=message, model=model)
+    async with (
+        httpx.AsyncClient() as client,
+        client.stream(method="POST", url=ollama_url, json=payload) as response,
+    ):
+        async for line in response.aiter_lines():
+            if line:
+                chunk = json.loads(line)
+                token = chunk.get("message", {}).get("content", "")
+                if token:
+                    yield token
 
 
 async def stream_answer(
