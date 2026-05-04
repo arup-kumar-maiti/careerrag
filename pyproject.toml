@@ -29,11 +29,11 @@ name = "careerrag"
 readme = "README.md"
 requires-python = ">=3.11"
 
-[project.scripts]
-careerrag = "careerrag.__main__:cli"
-
 [project.optional-dependencies]
 dev = ["pytest>=9.0"]
+
+[project.scripts]
+careerrag = "careerrag.__main__:cli"
 
 [project.urls]
 Homepage = "https://github.com/arup-kumar-maiti/careerrag"
