@@ -1,7 +1,7 @@
 """Define the CareerRAG web application."""
 
 from collections.abc import AsyncGenerator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import chromadb
@@ -11,7 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
-from careerrag.config import SETTING_MODEL, SETTING_PROVIDER, load_setting
 from careerrag.rag.pipeline import stream_response
 
 CONTENT_TYPE_SSE = "text/event-stream"
@@ -32,17 +31,10 @@ class ServerConfig:
 
     collection: chromadb.Collection
     name: str
-    model: str = field(default_factory=lambda: load_setting(name=SETTING_MODEL))
-    provider: str = field(default_factory=lambda: load_setting(name=SETTING_PROVIDER))
 
 
 async def _format_sse(question: str, config: ServerConfig) -> AsyncGenerator[str, None]:
-    async for token in stream_response(
-        collection=config.collection,
-        question=question,
-        provider=config.provider,
-        model=config.model,
-    ):
+    async for token in stream_response(collection=config.collection, question=question):
         yield SSE_DATA_FORMAT.format(token)
     yield DONE_SIGNAL
 

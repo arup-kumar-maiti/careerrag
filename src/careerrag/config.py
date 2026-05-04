@@ -1,18 +1,37 @@
-"""Store and retrieve settings from the system keychain."""
+"""Load and save application configuration."""
 
-import keyring
+from pathlib import Path
+from typing import Any
 
-KEYRING_SERVICE = "careerrag"
-SETTING_ANTHROPIC_API_KEY = "anthropic_api_key"
-SETTING_MODEL = "model"
-SETTING_PROVIDER = "provider"
+import yaml
+
+CONFIG_DIR = Path(".careerrag")
+CONFIG_FILE = CONFIG_DIR / "config.yml"
+DEFAULT_CONFIG = {
+    "diversity_enabled": True,
+    "host": "127.0.0.1",
+    "keyword_enabled": True,
+    "model": "",
+    "ollama_url": "http://localhost:11434/api/chat",
+    "port": 8000,
+    "provider": "ollama",
+    "rerank_enabled": False,
+    "store": ".careerrag/store",
+}
 
 
-def load_setting(name: str, default: str = "") -> str:
-    """Return a setting from the system keychain."""
-    return keyring.get_password(service_name=KEYRING_SERVICE, username=name) or default
+def save_config(config: dict[str, Any]) -> None:
+    """Write the configuration to disk."""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(
+        yaml.dump(data=config, default_flow_style=False, sort_keys=True),
+        encoding="utf-8",
+    )
 
 
-def save_setting(name: str, value: str) -> None:
-    """Store a setting in the system keychain."""
-    keyring.set_password(service_name=KEYRING_SERVICE, username=name, password=value)
+def load_config() -> dict[str, Any]:
+    """Return the configuration with defaults for any missing keys."""
+    if not CONFIG_FILE.exists():
+        save_config(config=DEFAULT_CONFIG)
+    user_config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}
+    return {**DEFAULT_CONFIG, **user_config}

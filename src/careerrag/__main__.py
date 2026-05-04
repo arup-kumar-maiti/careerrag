@@ -7,41 +7,21 @@ import chromadb
 import typer
 import uvicorn
 
-from careerrag.config import (
-    SETTING_ANTHROPIC_API_KEY,
-    SETTING_MODEL,
-    SETTING_PROVIDER,
-    save_setting,
-)
+from careerrag.config import load_config
 from careerrag.rag.chunker import chunk_document
 from careerrag.rag.indexer import get_or_create_collection, index_chunks
 from careerrag.rag.loader import load_document
 from careerrag.rag.pipeline import stream_response
-from careerrag.rag.util import DEFAULT_STORE_PATH, PROVIDER_CLAUDE, PROVIDER_OLLAMA
 from careerrag.server.app import ServerConfig, create_app
 
-DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 8000
 SUPPORTED_EXTENSIONS = {".docx", ".md", ".pdf", ".txt"}
 
 cli = typer.Typer(help="RAG-powered chat interface for career profiles")
 
 
-@cli.command()
-def init() -> None:
-    """Configure the LLM provider and credentials."""
-    provider = typer.prompt("LLM provider", default=PROVIDER_OLLAMA)
-    save_setting(name=SETTING_PROVIDER, value=provider)
-    model = typer.prompt("Model name", default="")
-    save_setting(name=SETTING_MODEL, value=model)
-    if provider == PROVIDER_CLAUDE:
-        api_key = typer.prompt("Anthropic API key", hide_input=True)
-        save_setting(name=SETTING_ANTHROPIC_API_KEY, value=api_key)
-    typer.echo("Configuration saved to system keychain.")
-
-
-def _index_documents(docs_path: Path, store_path: str) -> chromadb.Collection:
-    collection = get_or_create_collection(path=store_path)
+def _index_documents(docs_path: Path, config: dict[str, object]) -> chromadb.Collection:
+    store = str(config["store"])
+    collection = get_or_create_collection(path=store)
     count = 0
     for file_path in sorted(docs_path.iterdir()):
         if file_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
@@ -56,18 +36,19 @@ def _index_documents(docs_path: Path, store_path: str) -> chromadb.Collection:
 @cli.command()
 def index(
     docs: Path = typer.Option(..., help="Path to the documents directory"),
-    store: str = typer.Option(DEFAULT_STORE_PATH, help="Path to the vector store"),
 ) -> None:
     """Index documents into the vector store."""
-    _index_documents(docs_path=docs, store_path=store)
+    config = load_config()
+    _index_documents(docs_path=docs, config=config)
 
 
 @cli.command()
 def query(
     question: str = typer.Option(..., help="Question to ask"),
-    store: str = typer.Option(DEFAULT_STORE_PATH, help="Path to the vector store"),
 ) -> None:
     """Stream an answer for the given question."""
+    config = load_config()
+    store = str(config["store"])
     collection = get_or_create_collection(path=store)
 
     async def _run() -> None:
@@ -82,18 +63,21 @@ def query(
 def serve(
     docs: Path | None = typer.Option(None, help="Path to the documents directory"),
     name: str = typer.Option(..., help="Name to display in the chat UI"),
-    store: str = typer.Option(DEFAULT_STORE_PATH, help="Path to the vector store"),
 ) -> None:
     """Start the web server, indexing documents if provided."""
+    config = load_config()
+    store = str(config["store"])
     collection = get_or_create_collection(path=store)
     if docs:
-        _index_documents(docs_path=docs, store_path=store)
+        _index_documents(docs_path=docs, config=config)
     if collection.count() == 0:
         typer.echo("No documents indexed. Pass --docs <directory> to index documents.")
         raise typer.Exit(code=1)
-    config = ServerConfig(collection=collection, name=name)
-    web_app = create_app(config=config)
-    uvicorn.run(app=web_app, host=DEFAULT_HOST, port=DEFAULT_PORT)
+    server_config = ServerConfig(collection=collection, name=name)
+    host = str(config["host"])
+    port = int(config["port"])
+    web_app = create_app(config=server_config)
+    uvicorn.run(app=web_app, host=host, port=port)
 
 
 cli()
