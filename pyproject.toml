@@ -19,7 +19,7 @@ dependencies = [
   "pyyaml>=6.0",
   "rank-bm25>=0.2",
   "sentence-transformers>=5.4",
-  "typer>=0.25",
+  "typer>=0.21",
   "uvicorn[standard]>=0.46",
 ]
 description = "RAG-powered chat interface for career profiles"
