@@ -80,4 +80,5 @@ def serve(
     uvicorn.run(app=web_app, host=host, port=port)
 
 
-cli()
+if __name__ == "__main__":
+    cli()
