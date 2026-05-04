@@ -9,8 +9,6 @@ from anthropic import AsyncAnthropic
 from careerrag.config import load_config
 from careerrag.rag.util import PROVIDER_CLAUDE, PROVIDER_OLLAMA
 
-DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-20250514"
-DEFAULT_OLLAMA_MODEL = "llama3.2"
 MAX_RESPONSE_TOKENS = 4096
 
 
@@ -62,14 +60,8 @@ async def stream_answer(
 ) -> AsyncGenerator[str, None]:
     """Stream answer tokens from the configured LLM provider."""
     if provider == PROVIDER_CLAUDE:
-        resolved_model = model or DEFAULT_CLAUDE_MODEL
-        async for token in _stream_claude(
-            system=system, message=message, model=resolved_model
-        ):
+        async for token in _stream_claude(system=system, message=message, model=model):
             yield token
     else:
-        resolved_model = model or DEFAULT_OLLAMA_MODEL
-        async for token in _stream_ollama(
-            system=system, message=message, model=resolved_model
-        ):
+        async for token in _stream_ollama(system=system, message=message, model=model):
             yield token
