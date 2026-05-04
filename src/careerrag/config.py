@@ -11,7 +11,7 @@ DEFAULT_CONFIG = {
     "diversity_enabled": True,
     "host": "127.0.0.1",
     "keyword_enabled": True,
-    "model": "",
+    "model": "llama3.2",
     "ollama_url": "http://localhost:11434/api/chat",
     "port": 8000,
     "provider": "ollama",
@@ -32,6 +32,6 @@ def save_config(config: dict[str, Any]) -> None:
 def load_config() -> dict[str, Any]:
     """Return the configuration with defaults for any missing keys."""
     if not CONFIG_FILE.exists():
-        save_config(config=DEFAULT_CONFIG)
+        raise FileNotFoundError("Configuration not found. Run 'careerrag init'.")
     user_config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}
     return {**DEFAULT_CONFIG, **user_config}

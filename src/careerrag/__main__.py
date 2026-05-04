@@ -7,7 +7,7 @@ import chromadb
 import typer
 import uvicorn
 
-from careerrag.config import load_config
+from careerrag.config import DEFAULT_CONFIG, load_config, save_config
 from careerrag.rag.chunker import chunk_document
 from careerrag.rag.indexer import get_or_create_collection, index_chunks
 from careerrag.rag.loader import load_document
@@ -17,6 +17,15 @@ from careerrag.server.app import ServerConfig, create_app
 SUPPORTED_EXTENSIONS = {".docx", ".md", ".pdf", ".txt"}
 
 cli = typer.Typer(help="RAG-powered chat interface for career profiles")
+
+
+@cli.command()
+def init() -> None:
+    """Create a default configuration file."""
+    save_config(config=DEFAULT_CONFIG)
+    typer.echo(
+        "Created .careerrag/config.yml. Review settings before running other commands."
+    )
 
 
 def _index_documents(docs_path: Path, config: dict[str, object]) -> chromadb.Collection:
@@ -46,7 +55,7 @@ def index(
 def query(
     question: str = typer.Option(..., help="Question to ask"),
 ) -> None:
-    """Stream an answer for the given question."""
+    """Answer a question from indexed documents."""
     config = load_config()
     store = str(config["store"])
     collection = get_or_create_collection(path=store)
