@@ -1,5 +1,6 @@
 """Define the CareerRAG web application."""
 
+import json
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from pathlib import Path
@@ -35,7 +36,7 @@ class ServerConfig:
 
 async def _format_sse(question: str, config: ServerConfig) -> AsyncGenerator[str, None]:
     async for token in stream_response(collection=config.collection, question=question):
-        yield SSE_DATA_FORMAT.format(token)
+        yield SSE_DATA_FORMAT.format(json.dumps(token))
     yield DONE_SIGNAL
 
 
