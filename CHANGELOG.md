@@ -7,7 +7,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Chat web UI with FastAPI and SSE streaming.
+- Chat web UI with FastAPI, SSE streaming, and markdown rendering.
 - ChromaDB vector store with auto-embeddings via sentence-transformers.
 - CLI with init, index, query, and serve commands.
 - Cross-encoder reranking for precise relevance judgments.

@@ -1,5 +1,4 @@
 const ARMED_CLASS = 'armed';
-const BULLET_PREFIX = '\u2022 ';
 const CHAT_ENDPOINT = '/api/chat';
 const CURSOR_HTML = '<span class="cr-cursor"></span>';
 const DEFAULT_EXPAND_MS = 1000;
@@ -118,53 +117,8 @@ function insertTurn(userText) {
   return turn;
 }
 
-function escapeHtml(source) {
-  const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  };
-  return source.replace(/[&<>"']/g, function replace(character) {
-    return map[character];
-  });
-}
-
-function renderBulletList(lines) {
-  return (
-    '<ul class="cr-list">' +
-    lines
-      .map(function renderItem(line) {
-        return (
-          '<li class="cr-list-item">' +
-          escapeHtml(line.slice(BULLET_PREFIX.length)) +
-          '</li>'
-        );
-      })
-      .join('') +
-    '</ul>'
-  );
-}
-
-function renderBlock(block) {
-  const lines = block.split('\n');
-  if (
-    lines.every(function isBullet(line) {
-      return line.startsWith(BULLET_PREFIX);
-    })
-  ) {
-    return renderBulletList(lines);
-  }
-  return (
-    '<p class="cr-paragraph">' +
-    escapeHtml(block).replace(/\n/g, '<br>') +
-    '</p>'
-  );
-}
-
 function renderBody(text) {
-  return text.split(/\n\n+/).map(renderBlock).join('');
+  return DOMPurify.sanitize(marked.parse(text));
 }
 
 function pinToLastTurn() {
@@ -199,8 +153,9 @@ async function streamFromServer(turnNode, userText) {
     buffer = lines.pop();
     for (const line of lines) {
       if (!line.startsWith(SSE_PREFIX)) continue;
-      const token = line.slice(SSE_PREFIX.length);
-      if (token === DONE_SIGNAL) break;
+      const raw = line.slice(SSE_PREFIX.length);
+      if (raw === DONE_SIGNAL) break;
+      const token = JSON.parse(raw);
       fullText += token;
       target.innerHTML = renderBody(fullText) + CURSOR_HTML;
       if (following) pinToLastTurn();
