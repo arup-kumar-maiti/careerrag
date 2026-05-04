@@ -5,11 +5,14 @@ from pathlib import Path
 
 import chromadb
 
+import careerrag.config as config_module
+from careerrag.config import DEFAULT_CONFIG, load_config, save_config
 from careerrag.rag.chunker import MAX_CHUNK_SIZE, chunk_document
 from careerrag.rag.indexer import get_or_create_collection, index_chunks, remove_source
 from careerrag.rag.loader import load_document
+from careerrag.rag.prompt import SYSTEM_INSTRUCTION, format_user_message
 from careerrag.rag.retriever import RetrievalConfig, query_chunks
-from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE
+from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, Chunk
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 FULL_PIPELINE_CONFIG = RetrievalConfig(
@@ -70,3 +73,53 @@ def test_pdf_pipeline() -> None:
 def test_docx_pipeline() -> None:
     """Load, chunk, index, query, re-index, and remove a DOCX resume."""
     _verify_pipeline(path=FIXTURES_DIR / "sample-resume.docx")
+
+
+def test_config_lifecycle() -> None:
+    """Save, load, and merge configuration with defaults."""
+    with tempfile.TemporaryDirectory() as tmp:
+        config_dir = Path(tmp) / ".careerrag"
+        config_file = config_dir / "config.yml"
+
+        original_dir = config_module.CONFIG_DIR
+        original_file = config_module.CONFIG_FILE
+        config_module.CONFIG_DIR = config_dir
+        config_module.CONFIG_FILE = config_file
+
+        try:
+            save_config(config=DEFAULT_CONFIG)
+            assert config_file.exists()
+            loaded = load_config()
+            assert loaded["provider"] == "ollama"
+            assert loaded["model"] == "llama3.2"
+            save_config(
+                config={"provider": "claude", "model": "claude-sonnet-4-20250514"}
+            )
+            merged = load_config()
+            assert merged["provider"] == "claude"
+            assert merged["model"] == "claude-sonnet-4-20250514"
+            assert merged["host"] == "127.0.0.1"
+        finally:
+            config_module.CONFIG_DIR = original_dir
+            config_module.CONFIG_FILE = original_file
+
+
+def test_prompt_formatting() -> None:
+    """Format chunks into a user message with section and source headers."""
+    chunks = [
+        Chunk(
+            metadata={METADATA_SECTION: "Skills", METADATA_SOURCE: "resume.pdf"},
+            text="Python, Go, Rust",
+        ),
+        Chunk(
+            metadata={METADATA_SECTION: "Experience", METADATA_SOURCE: "resume.pdf"},
+            text="Built distributed systems",
+        ),
+    ]
+    message = format_user_message(question="What languages?", chunks=chunks)
+    assert "Context:" in message
+    assert "Question: What languages?" in message
+    assert "[Skills | resume.pdf]" in message
+    assert "[Experience | resume.pdf]" in message
+    assert "Python, Go, Rust" in message
+    assert SYSTEM_INSTRUCTION not in message
