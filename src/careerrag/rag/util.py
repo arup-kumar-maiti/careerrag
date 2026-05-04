@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 
-DEFAULT_STORE_PATH = ".careerrag/store"
 KIND_BODY = "body"
 KIND_CONTACT = "contact"
 KIND_HEADING = "heading"

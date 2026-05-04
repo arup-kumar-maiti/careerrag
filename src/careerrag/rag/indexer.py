@@ -5,20 +5,15 @@ from typing import TYPE_CHECKING, cast
 
 import chromadb
 
-from careerrag.rag.util import (
-    DEFAULT_STORE_PATH,
-    METADATA_SECTION,
-    METADATA_SOURCE,
-    Chunk,
-)
+from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, Chunk
 
 if TYPE_CHECKING:
     from chromadb.api.types import Metadata
 
-COLLECTION_NAME = "career_chunks"
+COLLECTION_NAME = "careerrag_chunks"
 
 
-def get_or_create_collection(path: str = DEFAULT_STORE_PATH) -> chromadb.Collection:
+def get_or_create_collection(path: str) -> chromadb.Collection:
     """Return a ChromaDB collection backed by persistent storage at the given path."""
     client = chromadb.PersistentClient(path=path)
     return client.get_or_create_collection(name=COLLECTION_NAME)
