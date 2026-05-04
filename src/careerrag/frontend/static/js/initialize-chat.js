@@ -118,7 +118,7 @@ function insertTurn(userText) {
 }
 
 function renderBody(text) {
-  return marked.parse(text);
+  return DOMPurify.sanitize(marked.parse(text));
 }
 
 function pinToLastTurn() {
