@@ -18,6 +18,7 @@ CONTENT_TYPE_SSE = "text/event-stream"
 DONE_SIGNAL = "data: [DONE]\n\n"
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 SSE_DATA_FORMAT = "data: {}\n\n"
+SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 
 
 class ChatRequest(BaseModel):
@@ -63,6 +64,7 @@ def create_app(config: ServerConfig) -> FastAPI:
         return StreamingResponse(
             content=_format_sse(question=request.message, config=config),
             media_type=CONTENT_TYPE_SSE,
+            headers=SSE_HEADERS,
         )
 
     return app
