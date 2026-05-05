@@ -4,10 +4,8 @@ PYTHON := $(shell command -v python3 || command -v python)
 
 setup:
 	$(PYTHON) -m venv .venv
-	.venv/bin/pip install dryclean
-	.venv/bin/pip install -e ".[dev]"
+	.venv/bin/pip install dryclean -e ".[dev]"
 	.venv/bin/dryclean init
-	@echo "Run 'source .venv/bin/activate' to activate the environment"
 
 install:
 	.venv/bin/pip install -e ".[dev]"
@@ -19,4 +17,4 @@ test:
 	.venv/bin/pytest tests/
 
 clean:
-	rm -rf *.egg-info/ .careerrag/ .mypy_cache/ .pytest_cache/ .ruff_cache/ build/ dist/
+	rm -rf *.egg-info/ .mypy_cache/ .pytest_cache/ .ruff_cache/ build/ dist/
