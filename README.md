@@ -95,7 +95,7 @@ model: claude-sonnet-4-20250514
 careerrag index --docs ./documents
 ```
 
-Supported formats: PDF, DOCX, Markdown, plain text.
+Supported formats: PDF, DOCX, Markdown, plain text
 
 ### Query from Terminal
 
