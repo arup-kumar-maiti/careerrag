@@ -7,8 +7,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Dockerfile with versioned build argument for container deployments.
 - Docker image publishing to GHCR in the release workflow.
+- Dockerfile with versioned build argument for container deployments.
 - PyPI version and download badges in README.
 
 ### Fixed
