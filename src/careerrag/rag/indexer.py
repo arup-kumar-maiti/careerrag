@@ -28,18 +28,23 @@ def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
     """Upsert chunks into the collection and return the count stored."""
     if not chunks:
         return 0
-    ids = [
-        _generate_chunk_id(
+    seen: set[str] = set()
+    ids: list[str] = []
+    documents: list[str] = []
+    metadatas: list[Metadata] = []
+    for chunk in chunks:
+        chunk_id = _generate_chunk_id(
             source=chunk.metadata[METADATA_SOURCE],
             section=chunk.metadata[METADATA_SECTION],
             text=chunk.text,
         )
-        for chunk in chunks
-    ]
-    documents = [chunk.text for chunk in chunks]
-    metadatas = cast("list[Metadata]", [chunk.metadata for chunk in chunks])
+        if chunk_id not in seen:
+            seen.add(chunk_id)
+            ids.append(chunk_id)
+            documents.append(chunk.text)
+            metadatas.append(cast("Metadata", chunk.metadata))
     collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
-    return len(chunks)
+    return len(ids)
 
 
 def remove_source(collection: chromadb.Collection, source: str) -> None:
