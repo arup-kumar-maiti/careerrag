@@ -3,6 +3,19 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-05-07
+
+### Added
+
+- Dockerfile with versioned build argument for container deployments.
+- Docker image publishing to GHCR in the release workflow.
+- PyPI version and download badges in README.
+
+### Fixed
+
+- Add SSE streaming headers for proper event delivery.
+- Deduplicate chunks before upserting to ChromaDB.
+
 ## [1.0.0] - 2026-05-04
 
 ### Added
