@@ -6,7 +6,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar, cast
 
-import phoenix as px
+import phoenix
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.trace import TracerProvider
@@ -103,7 +103,7 @@ def trace_step(
 
 def initialize_tracing(port: int) -> None:
     """Launch Phoenix and configure OpenTelemetry to export traces."""
-    px.launch_app(port=port)
+    phoenix.launch_app(port=port)
     provider = TracerProvider()
     endpoint = f"http://localhost:{port}{PHOENIX_TRACES_PATH}"
     exporter = OTLPSpanExporter(endpoint=endpoint)
