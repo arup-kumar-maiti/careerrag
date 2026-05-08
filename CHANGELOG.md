@@ -9,8 +9,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Deployment guide for VPS with Dokploy and Cloudflare.
 - Phoenix tracing UI for retrieval pipeline observability.
-- Tracing spans for vector search, keyword search, fusion, reranking, diversity selection, and generation.
 - `trace_step` decorator for automatic OpenTelemetry span instrumentation.
+- Tracing spans for vector search, keyword search, fusion, reranking, diversity selection, and generation.
 
 ### Changed
 
