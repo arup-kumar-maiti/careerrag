@@ -1,8 +1,8 @@
 # Deployment Guide
 
-Deploy to a VPS with a custom domain. Set up the server with [launchpad](https://github.com/arup-kumar-maiti/launchpad).
+Set up the server with [launchpad](https://github.com/arup-kumar-maiti/launchpad).
 
-## Configure and Upload
+## Local
 
 ```bash
 careerrag init
@@ -21,17 +21,35 @@ careerrag index --docs ~/documents
 ```
 
 ```bash
-scp -r .careerrag/* ssh.example.com:/root/careerrag-data/
+ssh ssh.example.com 'sudo mkdir -p /opt/careerrag/.careerrag'
+scp -r .careerrag/* ssh.example.com:/opt/careerrag/.careerrag/
 ```
 
-## Create the Application
+## Server
 
-1. Open `https://dokploy.example.com`, complete onboarding
-2. Add Docker Registry — URL: `ghcr.io`, Username: `<github-username>`, Password: GitHub PAT (classic) with `read:packages`
-3. Create a project and application with image `ghcr.io/arup-kumar-maiti/careerrag:latest`
-4. Run command: `careerrag serve`
-5. Volume Bind Mount: `/root/careerrag-data` → `/app/.careerrag`
-6. Environment: `ANTHROPIC_API_KEY=sk-ant-...`
-7. Domain: `example.com`, Port: `8000`
-8. Domain for Phoenix tracing UI: `phoenix.example.com`, Port: `3300`
-9. Deploy and open `https://example.com`
+```bash
+sudo python3 -m venv /opt/careerrag/venv
+sudo /opt/careerrag/venv/bin/pip install careerrag
+```
+
+```bash
+cd /opt/careerrag
+export ANTHROPIC_API_KEY=sk-ant-...
+sudo -E /opt/careerrag/venv/bin/careerrag deploy
+```
+
+Verify:
+
+```bash
+curl http://localhost:8000
+curl http://localhost:3300
+```
+
+## Useful Commands
+
+```bash
+sudo systemctl status careerrag
+sudo systemctl restart careerrag
+sudo systemctl stop careerrag
+sudo journalctl -u careerrag -f
+```
