@@ -2,6 +2,7 @@
 
 import inspect
 import json
+import os
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar, cast
@@ -103,7 +104,8 @@ def trace_step(
 
 def initialize_tracing(port: int) -> None:
     """Launch Phoenix and configure OpenTelemetry to export traces."""
-    phoenix.launch_app(port=port)
+    os.environ["PHOENIX_PORT"] = str(port)
+    phoenix.launch_app()
     provider = TracerProvider()
     endpoint = f"http://localhost:{port}{PHOENIX_TRACES_PATH}"
     exporter = OTLPSpanExporter(endpoint=endpoint)
