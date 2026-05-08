@@ -104,6 +104,7 @@ def trace_step(
 
 def initialize_tracing(port: int) -> None:
     """Launch Phoenix and configure OpenTelemetry to export traces."""
+    os.environ["PHOENIX_HOST"] = "0.0.0.0"
     os.environ["PHOENIX_PORT"] = str(port)
     phoenix.launch_app()
     provider = TracerProvider()
