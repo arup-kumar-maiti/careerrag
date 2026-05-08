@@ -3,6 +3,22 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-08
+
+### Added
+
+- Deployment guide for VPS with Dokploy and Cloudflare.
+- Phoenix tracing UI for retrieval pipeline observability.
+- Tracing spans for vector search, keyword search, fusion, reranking, diversity selection, and generation.
+- `trace_step` decorator for automatic OpenTelemetry span instrumentation.
+
+### Changed
+
+- Default server host from `127.0.0.1` to `0.0.0.0`.
+- Move `--name` CLI flag to `username` config key with `John Doe` default.
+- Pin transitive dependencies to prevent pip resolution-too-deep errors.
+- Rename config keys for clarity: `host` to `server_host`, `port` to `server_port`, `store` to `vector_store`.
+
 ## [1.1.0] - 2026-05-07
 
 ### Added
