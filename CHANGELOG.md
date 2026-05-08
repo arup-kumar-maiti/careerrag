@@ -3,6 +3,16 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-05-09
+
+### Added
+
+- `deploy` command to install as a systemd service via launchpad.
+
+### Changed
+
+- Rewrite deployment guide for systemd-based workflow.
+
 ## [1.2.3] - 2026-05-08
 
 ### Fixed
