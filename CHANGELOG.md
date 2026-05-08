@@ -14,7 +14,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Default server host from `127.0.0.1` to `0.0.0.0`.
+- Change default server host from `127.0.0.1` to `0.0.0.0`.
 - Move `--name` CLI flag to `username` config key with `John Doe` default.
 - Pin transitive dependencies to prevent pip resolution-too-deep errors.
 - Rename config keys for clarity: `host` to `server_host`, `port` to `server_port`, `store` to `vector_store`.
