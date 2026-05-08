@@ -107,7 +107,7 @@ def _check_launchpad() -> None:
 
 def _build_deploy_command() -> list[str]:
     venv_bin = Path(sys.executable).parent
-    serve_path = venv_bin / SERVICE_NAME
+    binary_path = venv_bin / SERVICE_NAME
     working_directory = str(Path.cwd())
     command = [
         LAUNCHPAD_BINARY,
@@ -116,7 +116,7 @@ def _build_deploy_command() -> list[str]:
         "--name",
         SERVICE_NAME,
         "--cmd",
-        str(serve_path) + " serve",
+        str(binary_path) + " serve",
         "--dir",
         working_directory,
     ]
