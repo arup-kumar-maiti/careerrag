@@ -1,6 +1,10 @@
 """Run the CareerRAG command-line interface."""
 
 import asyncio
+import os
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 
 import chromadb
@@ -15,6 +19,9 @@ from careerrag.rag.pipeline import stream_response
 from careerrag.rag.tracing import initialize_tracing
 from careerrag.server.app import ServerConfig, create_app
 
+API_KEY_ENV_VAR = "ANTHROPIC_API_KEY"
+LAUNCHPAD_BINARY = "launchpad"
+SERVICE_NAME = "careerrag"
 SUPPORTED_EXTENSIONS = {".docx", ".md", ".pdf", ".txt"}
 
 cli = typer.Typer(help="RAG-powered chat interface for career profiles")
@@ -90,6 +97,41 @@ def serve(
     port = int(config["server_port"])
     web_app = create_app(config=server_config)
     uvicorn.run(app=web_app, host=host, port=port)
+
+
+def _check_launchpad() -> None:
+    if not shutil.which(LAUNCHPAD_BINARY):
+        typer.echo("launchpad CLI not found.")
+        raise typer.Exit(code=1)
+
+
+def _build_deploy_command() -> list[str]:
+    venv_bin = Path(sys.executable).parent
+    binary_path = venv_bin / SERVICE_NAME
+    working_directory = str(Path.cwd())
+    command = [
+        LAUNCHPAD_BINARY,
+        "service",
+        "create",
+        "--name",
+        SERVICE_NAME,
+        "--cmd",
+        str(binary_path) + " serve",
+        "--dir",
+        working_directory,
+    ]
+    api_key = os.environ.get(API_KEY_ENV_VAR, "")
+    if api_key:
+        command.extend(["--env", f"{API_KEY_ENV_VAR}={api_key}"])
+    return command
+
+
+@cli.command()
+def deploy() -> None:
+    """Deploy the application as a background service."""
+    _check_launchpad()
+    command = _build_deploy_command()
+    subprocess.run(command, check=True)
 
 
 if __name__ == "__main__":
