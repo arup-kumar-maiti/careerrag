@@ -4,13 +4,15 @@ from typing import Any
 
 from sentence_transformers import CrossEncoder
 
-from careerrag.rag.util import ScoredChunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_RERANKING, ScoredChunk
 
 CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 _cache: dict[str, Any] = {}
 
 
+@trace_step(SPAN_RERANKING)
 def rerank_chunks(
     question: str, candidates: list[ScoredChunk], limit: int
 ) -> list[ScoredChunk]:

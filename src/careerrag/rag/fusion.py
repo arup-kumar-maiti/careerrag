@@ -1,10 +1,12 @@
 """Merge ranked results from multiple search methods using reciprocal rank fusion."""
 
-from careerrag.rag.util import ScoredChunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_FUSION, ScoredChunk
 
 RANK_SMOOTHING_FACTOR = 60
 
 
+@trace_step(SPAN_FUSION)
 def fuse_rankings(ranked_lists: list[list[ScoredChunk]]) -> list[ScoredChunk]:
     """Merge multiple ranked result lists using reciprocal rank fusion."""
     chunk_map: dict[str, ScoredChunk] = {}

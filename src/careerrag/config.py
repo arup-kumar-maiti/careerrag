@@ -9,14 +9,16 @@ CONFIG_DIR = Path(".careerrag")
 CONFIG_FILE = CONFIG_DIR / "config.yml"
 DEFAULT_CONFIG = {
     "diversity_enabled": True,
-    "host": "127.0.0.1",
     "keyword_enabled": True,
     "model": "llama3.2",
     "ollama_url": "http://localhost:11434/api/chat",
-    "port": 8000,
+    "phoenix_port": 3300,
     "provider": "ollama",
     "rerank_enabled": False,
-    "store": ".careerrag/store",
+    "server_host": "0.0.0.0",
+    "server_port": 8000,
+    "username": "John Doe",
+    "vector_store": ".careerrag/store",
 }
 
 

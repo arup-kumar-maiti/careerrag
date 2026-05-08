@@ -2,7 +2,8 @@
 
 import math
 
-from careerrag.rag.util import ScoredChunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_DIVERSITY, ScoredChunk
 
 
 def _compute_similarity(embedding_a: list[float], embedding_b: list[float]) -> float:
@@ -30,6 +31,7 @@ def _score_candidate_diversity(
     return diversity_weight * relevance - (1 - diversity_weight) * redundancy
 
 
+@trace_step(SPAN_DIVERSITY)
 def diversify_candidates(
     candidates: list[ScoredChunk],
     query_embedding: list[float],

@@ -10,6 +10,8 @@ from careerrag.config import load_config
 from careerrag.rag.generator import stream_answer
 from careerrag.rag.prompt import SYSTEM_INSTRUCTION, format_user_message
 from careerrag.rag.retriever import RetrievalConfig, query_chunks
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_STREAM
 
 _TYPE_MAP: dict[str, type[Any]] = {"bool": bool, "float": float, "int": int}
 
@@ -27,6 +29,7 @@ def _build_retrieval_config(config: dict[str, Any]) -> RetrievalConfig:
     return RetrievalConfig(**overrides)
 
 
+@trace_step(SPAN_STREAM, query_parameter="question")
 async def stream_response(
     collection: chromadb.Collection, question: str
 ) -> AsyncGenerator[str, None]:

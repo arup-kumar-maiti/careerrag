@@ -3,9 +3,11 @@
 import chromadb
 from rank_bm25 import BM25Okapi
 
-from careerrag.rag.util import ScoredChunk, build_scored_chunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_KEYWORD_SEARCH, ScoredChunk, build_scored_chunk
 
 
+@trace_step(SPAN_KEYWORD_SEARCH)
 def search_keyword(
     collection: chromadb.Collection, question: str, limit: int
 ) -> list[ScoredChunk]:

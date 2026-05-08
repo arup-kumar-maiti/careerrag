@@ -2,9 +2,11 @@
 
 import chromadb
 
-from careerrag.rag.util import ScoredChunk, build_scored_chunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_VECTOR_SEARCH, ScoredChunk, build_scored_chunk
 
 
+@trace_step(SPAN_VECTOR_SEARCH)
 def search_vector(
     collection: chromadb.Collection, question: str, limit: int
 ) -> list[ScoredChunk]:
