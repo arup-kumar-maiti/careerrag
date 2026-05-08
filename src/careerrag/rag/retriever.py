@@ -8,6 +8,7 @@ from careerrag.rag.fusion import fuse_rankings
 from careerrag.rag.keyword import search_keyword
 from careerrag.rag.reranker import rerank_chunks
 from careerrag.rag.selector import diversify_candidates
+from careerrag.rag.tracing import SPAN_RETRIEVAL, trace_step
 from careerrag.rag.util import Chunk, ScoredChunk
 from careerrag.rag.vector import search_vector
 
@@ -44,6 +45,7 @@ def _gather_candidates(
     return search_results[0]
 
 
+@trace_step(SPAN_RETRIEVAL, query_param="question")
 def query_chunks(
     collection: chromadb.Collection,
     question: str,

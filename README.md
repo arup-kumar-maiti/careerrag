@@ -68,14 +68,16 @@ careerrag init
 
 ```yaml
 diversity_enabled: true
-host: 127.0.0.1
 keyword_enabled: true
 model: llama3.2
 ollama_url: http://localhost:11434/api/chat
-port: 8000
+phoenix_port: 3300
 provider: ollama
 rerank_enabled: false
-store: .careerrag/store
+server_host: 0.0.0.0
+server_port: 8000
+username: John Doe
+vector_store: .careerrag/store
 ```
 
 To use Claude instead of Ollama, set the API key and update `.careerrag/config.yml`:
@@ -112,11 +114,12 @@ DevOps Pipelines, Container Registry, and Service Bus, as well as Vercel.
 ### Start the Server
 
 ```bash
-careerrag serve --name "John Doe" --docs ./documents
+careerrag serve --docs ./documents
 ```
 
-- Open `http://127.0.0.1:8000`
+- Open `http://localhost:8000`
 - Pass `--docs` to index documents if not already indexed
+- Open Phoenix tracing UI at `http://localhost:3300`
 
 ## Library Usage
 

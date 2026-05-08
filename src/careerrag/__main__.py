@@ -12,6 +12,7 @@ from careerrag.rag.chunker import chunk_document
 from careerrag.rag.indexer import get_or_create_collection, index_chunks
 from careerrag.rag.loader import load_document
 from careerrag.rag.pipeline import stream_response
+from careerrag.rag.tracing import initialize_tracing
 from careerrag.server.app import ServerConfig, create_app
 
 SUPPORTED_EXTENSIONS = {".docx", ".md", ".pdf", ".txt"}
@@ -29,7 +30,7 @@ def init() -> None:
 
 
 def _index_documents(docs_path: Path, config: dict[str, object]) -> chromadb.Collection:
-    store = str(config["store"])
+    store = str(config["vector_store"])
     collection = get_or_create_collection(path=store)
     count = 0
     for file_path in sorted(docs_path.iterdir()):
@@ -57,7 +58,7 @@ def query(
 ) -> None:
     """Answer a question from indexed documents."""
     config = load_config()
-    store = str(config["store"])
+    store = str(config["vector_store"])
     collection = get_or_create_collection(path=store)
 
     async def _run() -> None:
@@ -71,20 +72,22 @@ def query(
 @cli.command()
 def serve(
     docs: Path | None = typer.Option(None, help="Path to the documents directory"),
-    name: str = typer.Option(..., help="Name to display in the chat UI"),
 ) -> None:
     """Start the web server, indexing documents if provided."""
     config = load_config()
-    store = str(config["store"])
+    phoenix_port = int(config["phoenix_port"])
+    initialize_tracing(port=phoenix_port)
+    store = str(config["vector_store"])
     collection = get_or_create_collection(path=store)
     if docs:
         _index_documents(docs_path=docs, config=config)
     if collection.count() == 0:
         typer.echo("No documents indexed. Pass --docs <directory> to index documents.")
         raise typer.Exit(code=1)
+    name = str(config["username"])
     server_config = ServerConfig(collection=collection, name=name)
-    host = str(config["host"])
-    port = int(config["port"])
+    host = str(config["server_host"])
+    port = int(config["server_port"])
     web_app = create_app(config=server_config)
     uvicorn.run(app=web_app, host=host, port=port)
 
