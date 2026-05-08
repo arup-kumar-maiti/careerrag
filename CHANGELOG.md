@@ -3,6 +3,12 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-05-08
+
+### Fixed
+
+- Use `PHOENIX_PORT` environment variable instead of deprecated `port` parameter.
+
 ## [1.2.1] - 2026-05-08
 
 ### Fixed
