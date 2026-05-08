@@ -4,8 +4,8 @@ from typing import Any
 
 from sentence_transformers import CrossEncoder
 
-from careerrag.rag.tracing import SPAN_RERANKING, trace_step
-from careerrag.rag.util import ScoredChunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_RERANKING, ScoredChunk
 
 CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 

@@ -2,8 +2,8 @@
 
 import math
 
-from careerrag.rag.tracing import SPAN_DIVERSITY, trace_step
-from careerrag.rag.util import ScoredChunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_DIVERSITY, ScoredChunk
 
 
 def _compute_similarity(embedding_a: list[float], embedding_b: list[float]) -> float:

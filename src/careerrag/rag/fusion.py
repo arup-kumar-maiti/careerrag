@@ -1,7 +1,7 @@
 """Merge ranked results from multiple search methods using reciprocal rank fusion."""
 
-from careerrag.rag.tracing import SPAN_FUSION, trace_step
-from careerrag.rag.util import ScoredChunk
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import SPAN_FUSION, ScoredChunk
 
 RANK_SMOOTHING_FACTOR = 60
 

@@ -7,8 +7,8 @@ import httpx
 from anthropic import AsyncAnthropic
 
 from careerrag.config import load_config
-from careerrag.rag.tracing import SPAN_GENERATION, trace_step
-from careerrag.rag.util import PROVIDER_CLAUDE, PROVIDER_OLLAMA
+from careerrag.rag.tracing import trace_step
+from careerrag.rag.util import PROVIDER_CLAUDE, PROVIDER_OLLAMA, SPAN_GENERATION
 
 MAX_RESPONSE_TOKENS = 4096
 
@@ -56,7 +56,7 @@ async def _stream_ollama(
                     yield token
 
 
-@trace_step(SPAN_GENERATION, trace_params=["provider", "model"])
+@trace_step(SPAN_GENERATION, trace_parameters=["provider", "model"])
 async def stream_answer(
     system: str, message: str, provider: str = PROVIDER_OLLAMA, model: str = ""
 ) -> AsyncGenerator[str, None]:

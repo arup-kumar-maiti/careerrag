@@ -10,6 +10,14 @@ METADATA_SECTION = "section"
 METADATA_SOURCE = "source"
 PROVIDER_CLAUDE = "claude"
 PROVIDER_OLLAMA = "ollama"
+SPAN_DIVERSITY = "diversity_selection"
+SPAN_FUSION = "fusion"
+SPAN_GENERATION = "generation"
+SPAN_KEYWORD_SEARCH = "keyword_search"
+SPAN_RERANKING = "reranking"
+SPAN_RETRIEVAL = "retrieval_pipeline"
+SPAN_STREAM = "stream_response"
+SPAN_VECTOR_SEARCH = "vector_search"
 
 
 @dataclass
