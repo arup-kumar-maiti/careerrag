@@ -19,6 +19,7 @@ from careerrag.rag.pipeline import stream_response
 from careerrag.rag.tracing import initialize_tracing
 from careerrag.server.app import ServerConfig, create_app
 
+API_KEY_ENV_VAR = "ANTHROPIC_API_KEY"
 LAUNCHPAD_BINARY = "launchpad"
 SERVICE_NAME = "careerrag"
 SUPPORTED_EXTENSIONS = {".docx", ".md", ".pdf", ".txt"}
@@ -119,9 +120,9 @@ def _build_deploy_command() -> list[str]:
         "--dir",
         working_directory,
     ]
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    api_key = os.environ.get(API_KEY_ENV_VAR, "")
     if api_key:
-        command.extend(["--env", f"ANTHROPIC_API_KEY={api_key}"])
+        command.extend(["--env", f"{API_KEY_ENV_VAR}={api_key}"])
     return command
 
 

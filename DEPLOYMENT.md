@@ -2,7 +2,7 @@
 
 Set up the server with [launchpad](https://github.com/arup-kumar-maiti/launchpad).
 
-## Local
+## Configure and index
 
 ```bash
 careerrag init
@@ -25,7 +25,7 @@ ssh ssh.example.com 'sudo mkdir -p /opt/careerrag/.careerrag'
 scp -r .careerrag/* ssh.example.com:/opt/careerrag/.careerrag/
 ```
 
-## Server
+## Install and deploy
 
 ```bash
 sudo python3 -m venv /opt/careerrag/venv
@@ -38,14 +38,14 @@ export ANTHROPIC_API_KEY=sk-ant-...
 sudo -E /opt/careerrag/venv/bin/careerrag deploy
 ```
 
-Verify:
+## Verify the service
 
 ```bash
 curl http://localhost:8000
 curl http://localhost:3300
 ```
 
-## Useful Commands
+## Manage the service
 
 ```bash
 sudo systemctl status careerrag
