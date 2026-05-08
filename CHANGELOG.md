@@ -3,6 +3,12 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-05-08
+
+### Fixed
+
+- Upgrade pip in Dockerfile to resolve arize-phoenix dependency conflicts.
+
 ## [1.2.0] - 2026-05-08
 
 ### Added
