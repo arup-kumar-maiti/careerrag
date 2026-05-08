@@ -12,7 +12,7 @@ careerrag init
 sed \
   -e 's/model: llama3.2/model: claude-sonnet-4-20250514/' \
   -e 's/provider: ollama/provider: claude/' \
-  -e 's/username: John Doe/username: Arup/' \
+  -e 's/username: John Doe/username: Your Name/' \
   .careerrag/config.yml > .careerrag/tmp.yml && mv .careerrag/tmp.yml .careerrag/config.yml
 ```
 
@@ -27,7 +27,7 @@ scp -r .careerrag/* ssh.example.com:/root/careerrag-data/
 ## Create the Application
 
 1. Open `https://dokploy.example.com`, complete onboarding
-2. Add Docker Registry — URL: `ghcr.io`, Username: `arup-kumar-maiti`, Password: GitHub PAT (classic) with `read:packages`
+2. Add Docker Registry — URL: `ghcr.io`, Username: `<github-username>`, Password: GitHub PAT (classic) with `read:packages`
 3. Create a project and application with image `ghcr.io/arup-kumar-maiti/careerrag:latest`
 4. Run command: `careerrag serve`
 5. Volume Bind Mount: `/root/careerrag-data` → `/app/.careerrag`
