@@ -28,7 +28,7 @@ scp -r .careerrag/* ssh.example.com:/root/careerrag-data/
 
 1. Open `https://dokploy.example.com`, complete onboarding
 2. Add Docker Registry — URL: `ghcr.io`, Username: `<github-username>`, Password: GitHub PAT (classic) with `read:packages`
-3. Create a project and application with image `ghcr.io/<github-username>/careerrag:latest`
+3. Create a project and application with image `ghcr.io/arup-kumar-maiti/careerrag:latest`
 4. Run command: `careerrag serve`
 5. Volume Bind Mount: `/root/careerrag-data` → `/app/.careerrag`
 6. Environment: `ANTHROPIC_API_KEY=sk-ant-...`
