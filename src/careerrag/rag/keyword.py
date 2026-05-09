@@ -3,15 +3,15 @@
 import chromadb
 from rank_bm25 import BM25Okapi
 
-from careerrag.rag.tracing import trace_step
-from careerrag.rag.util import SPAN_KEYWORD_SEARCH, ScoredChunk, build_scored_chunk
+from careerrag.rag.observer import log_step
+from careerrag.rag.util import ScoredChunk, build_scored_chunk
 
 
-@trace_step(SPAN_KEYWORD_SEARCH)
+@log_step
 def search_keyword(
     collection: chromadb.Collection, question: str, limit: int
 ) -> list[ScoredChunk]:
-    """Return chunks ranked by keyword relevance to the question."""
+    """Search chunks by keyword relevance to the question."""
     all_docs = collection.get(include=["documents", "embeddings", "metadatas"])
     documents = all_docs.get("documents") or []
     if not documents:

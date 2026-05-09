@@ -2,15 +2,15 @@
 
 import chromadb
 
-from careerrag.rag.tracing import trace_step
-from careerrag.rag.util import SPAN_VECTOR_SEARCH, ScoredChunk, build_scored_chunk
+from careerrag.rag.observer import log_step
+from careerrag.rag.util import ScoredChunk, build_scored_chunk
 
 
-@trace_step(SPAN_VECTOR_SEARCH)
+@log_step
 def search_vector(
     collection: chromadb.Collection, question: str, limit: int
 ) -> list[ScoredChunk]:
-    """Return chunks ranked by semantic similarity to the question."""
+    """Search chunks by semantic similarity to the question."""
     results = collection.query(
         query_texts=[question],
         n_results=limit,

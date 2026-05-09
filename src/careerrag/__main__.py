@@ -1,6 +1,7 @@
 """Run the CareerRAG command-line interface."""
 
 import asyncio
+import logging
 import os
 import shutil
 import subprocess
@@ -16,7 +17,6 @@ from careerrag.rag.chunker import chunk_document
 from careerrag.rag.indexer import get_or_create_collection, index_chunks
 from careerrag.rag.loader import load_document
 from careerrag.rag.pipeline import stream_response
-from careerrag.rag.tracing import initialize_tracing
 from careerrag.server.app import ServerConfig, create_app
 
 API_KEY_ENV_VAR = "ANTHROPIC_API_KEY"
@@ -81,9 +81,10 @@ def serve(
     docs: Path | None = typer.Option(None, help="Path to the documents directory"),
 ) -> None:
     """Start the web server, indexing documents if provided."""
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(name)s %(levelname)s %(message)s"
+    )
     config = load_config()
-    phoenix_port = int(config["phoenix_port"])
-    initialize_tracing(port=phoenix_port)
     store = str(config["vector_store"])
     collection = get_or_create_collection(path=store)
     if docs:

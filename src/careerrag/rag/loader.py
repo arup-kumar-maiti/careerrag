@@ -64,7 +64,7 @@ def _load_text(path: Path) -> list[DocumentElement]:
 
 
 def load_document(path: Path) -> LoadedDocument:
-    """Return structured elements and filename from a document path."""
+    """Load a document and extract structured elements."""
     loaders = {
         ".docx": _load_file,
         ".md": _load_text,
