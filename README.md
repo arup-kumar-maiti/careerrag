@@ -71,7 +71,6 @@ diversity_enabled: true
 keyword_enabled: true
 model: llama3.2
 ollama_url: http://localhost:11434/api/chat
-phoenix_port: 3300
 provider: ollama
 rerank_enabled: false
 server_host: 0.0.0.0
@@ -119,7 +118,6 @@ careerrag serve --docs ./documents
 
 - Open `http://localhost:8000`
 - Pass `--docs` to index documents if not already indexed
-- Open Phoenix tracing UI at `http://localhost:3300`
 
 ## Library Usage
 

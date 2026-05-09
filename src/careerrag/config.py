@@ -12,7 +12,6 @@ DEFAULT_CONFIG = {
     "keyword_enabled": True,
     "model": "llama3.2",
     "ollama_url": "http://localhost:11434/api/chat",
-    "phoenix_port": 3300,
     "provider": "ollama",
     "rerank_enabled": False,
     "server_host": "0.0.0.0",
@@ -32,7 +31,7 @@ def save_config(config: dict[str, Any]) -> None:
 
 
 def load_config() -> dict[str, Any]:
-    """Return the configuration with defaults for any missing keys."""
+    """Load the configuration with defaults for any missing keys."""
     if not CONFIG_FILE.exists():
         raise FileNotFoundError("Configuration not found. Run 'careerrag init'.")
     user_config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}

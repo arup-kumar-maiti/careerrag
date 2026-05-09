@@ -10,14 +10,6 @@ METADATA_SECTION = "section"
 METADATA_SOURCE = "source"
 PROVIDER_CLAUDE = "claude"
 PROVIDER_OLLAMA = "ollama"
-SPAN_DIVERSITY = "diversity_selection"
-SPAN_FUSION = "fusion"
-SPAN_GENERATION = "generation"
-SPAN_KEYWORD_SEARCH = "keyword_search"
-SPAN_RERANKING = "reranking"
-SPAN_RETRIEVAL = "retrieval_pipeline"
-SPAN_STREAM = "stream_response"
-SPAN_VECTOR_SEARCH = "vector_search"
 
 
 @dataclass
@@ -56,7 +48,7 @@ class ScoredChunk:
 def build_scored_chunk(
     metadata: object, text: object, embedding: object, score: float
 ) -> ScoredChunk:
-    """Return a ScoredChunk from raw ChromaDB result fields."""
+    """Build a ScoredChunk from raw ChromaDB result fields."""
     parsed_metadata = (
         {key: str(value) for key, value in metadata.items()}
         if isinstance(metadata, dict)

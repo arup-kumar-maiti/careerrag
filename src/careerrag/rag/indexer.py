@@ -14,7 +14,7 @@ COLLECTION_NAME = "careerrag_chunks"
 
 
 def get_or_create_collection(path: str) -> chromadb.Collection:
-    """Return a ChromaDB collection backed by persistent storage at the given path."""
+    """Open or create a ChromaDB collection at the given path."""
     client = chromadb.PersistentClient(path=path)
     return client.get_or_create_collection(name=COLLECTION_NAME)
 
@@ -25,7 +25,7 @@ def _generate_chunk_id(source: str, section: str, text: str) -> str:
 
 
 def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
-    """Upsert chunks into the collection and return the count stored."""
+    """Store document chunks in the collection."""
     if not chunks:
         return 0
     seen: set[str] = set()

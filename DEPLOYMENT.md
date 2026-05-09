@@ -42,7 +42,6 @@ sudo -E /opt/careerrag/venv/bin/careerrag deploy
 
 ```bash
 curl http://localhost:8000
-curl http://localhost:3300
 ```
 
 ## Manage the service

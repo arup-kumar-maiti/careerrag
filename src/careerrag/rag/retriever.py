@@ -6,10 +6,10 @@ import chromadb
 
 from careerrag.rag.fusion import fuse_rankings
 from careerrag.rag.keyword import search_keyword
+from careerrag.rag.observer import log_step
 from careerrag.rag.reranker import rerank_chunks
 from careerrag.rag.selector import diversify_candidates
-from careerrag.rag.tracing import trace_step
-from careerrag.rag.util import SPAN_RETRIEVAL, Chunk, ScoredChunk
+from careerrag.rag.util import Chunk, ScoredChunk
 from careerrag.rag.vector import search_vector
 
 
@@ -45,13 +45,13 @@ def _gather_candidates(
     return search_results[0]
 
 
-@trace_step(SPAN_RETRIEVAL, query_parameter="question")
+@log_step
 def query_chunks(
     collection: chromadb.Collection,
     question: str,
     config: RetrievalConfig | None = None,
 ) -> list[Chunk]:
-    """Return the most relevant chunks for the given question."""
+    """Retrieve the most relevant chunks for the given question."""
     if config is None:
         config = RetrievalConfig()
     candidates = _gather_candidates(

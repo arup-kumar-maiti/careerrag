@@ -42,7 +42,7 @@ async def _format_sse(question: str, config: ServerConfig) -> AsyncGenerator[str
 
 
 def create_app(config: ServerConfig) -> FastAPI:
-    """Return a FastAPI application wired to the RAG pipeline."""
+    """Create a FastAPI application wired to the RAG pipeline."""
     app = FastAPI(title="CareerRAG")
     app.mount(
         path="/static",
