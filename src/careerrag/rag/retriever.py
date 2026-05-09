@@ -17,13 +17,13 @@ from careerrag.rag.vector import search_vector
 class RetrievalConfig:
     """Control retrieval pipeline stages and parameters."""
 
-    candidate_count: int = 20
+    candidate_count: int = 40
     diversity_enabled: bool = True
     diversity_weight: float = 0.5
     keyword_enabled: bool = True
-    rerank_candidate_count: int = 10
+    rerank_candidate_count: int = 50
     rerank_enabled: bool = False
-    result_count: int = 5
+    result_count: int = 12
 
 
 def _gather_candidates(
@@ -63,10 +63,13 @@ def query_chunks(
             candidates=candidates,
             limit=config.rerank_candidate_count,
         )
-    if config.diversity_enabled and candidates and candidates[0].embedding:
+    query_embedding = next(
+        (scored.embedding for scored in candidates if scored.embedding), []
+    )
+    if config.diversity_enabled and candidates and query_embedding:
         candidates = diversify_candidates(
             candidates=candidates,
-            query_embedding=candidates[0].embedding,
+            query_embedding=query_embedding,
             limit=config.result_count,
             diversity_weight=config.diversity_weight,
         )
