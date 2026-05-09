@@ -3,6 +3,27 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-05-09
+
+### Added
+
+- `log_step` decorator in `observer.py` for automatic retrieval pipeline logging.
+- Structured logging for query, chunk count, scores, and metadata at each retrieval step.
+
+### Changed
+
+- Replace Phoenix tracing with Python `logging` via decorator.
+
+### Removed
+
+- Arize Phoenix and OpenTelemetry tracing dependencies.
+- `phoenix_port` configuration key.
+- `tracing.py` module.
+
+### Fixed
+
+- Rewrite docstrings across the codebase to describe what functions do, not what they return.
+
 ## [1.3.0] - 2026-05-09
 
 ### Added
