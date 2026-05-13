@@ -1,4 +1,4 @@
-"""Stream answers from an LLM using Ollama or Claude."""
+"""Stream answers from a configured LLM."""
 
 import json
 from collections.abc import AsyncGenerator
@@ -58,7 +58,7 @@ async def _stream_ollama(
 async def stream_answer(
     system: str, message: str, provider: str = PROVIDER_OLLAMA, model: str = ""
 ) -> AsyncGenerator[str, None]:
-    """Stream answer tokens from the configured LLM provider."""
+    """Generate an answer using the configured LLM provider."""
     if provider == PROVIDER_CLAUDE:
         async for token in _stream_claude(system=system, message=message, model=model):
             yield token

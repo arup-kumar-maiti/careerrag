@@ -1,4 +1,4 @@
-"""Select diverse document chunks using Maximal Marginal Relevance."""
+"""Select diverse document chunks to reduce redundancy."""
 
 import math
 from dataclasses import dataclass, field
@@ -14,7 +14,7 @@ SOURCE_REDUNDANCY_PENALTY = 0.3
 
 @dataclass
 class DiversityParams:
-    """Bundle diversity selection parameters."""
+    """Configure the diversity selection stage."""
 
     diversity_weight: float = 0.5
     limit: int = 12
@@ -23,8 +23,6 @@ class DiversityParams:
 
 @dataclass
 class _DiversityState:
-    """Track selection state during diversity picking."""
-
     params: DiversityParams
     selected: list[ScoredChunk] = field(default_factory=list)
     source_counts: dict[str, int] = field(default_factory=dict)

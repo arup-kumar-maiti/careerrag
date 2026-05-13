@@ -22,14 +22,14 @@ SSE_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
 
 
 class ChatRequest(BaseModel):
-    """Represent an incoming chat message."""
+    """Validate an incoming chat message."""
 
     message: str
 
 
 @dataclass
 class ServerConfig:
-    """Represent the server runtime configuration."""
+    """Hold the server configuration for request handling."""
 
     collection: chromadb.Collection
     name: str
@@ -42,7 +42,7 @@ async def _format_sse(question: str, config: ServerConfig) -> AsyncGenerator[str
 
 
 def create_app(config: ServerConfig) -> FastAPI:
-    """Create a FastAPI application wired to the RAG pipeline."""
+    """Create the web application for the RAG pipeline."""
     app = FastAPI(title="CareerRAG")
     app.mount(
         path="/static",

@@ -1,4 +1,4 @@
-"""Search document chunks by keyword matching using BM25."""
+"""Search document chunks by keyword matching."""
 
 import chromadb
 from rank_bm25 import BM25Okapi

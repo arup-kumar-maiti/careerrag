@@ -1,4 +1,4 @@
-"""Store and manage document chunks in ChromaDB."""
+"""Store and manage document chunks in the vector store."""
 
 import hashlib
 from typing import TYPE_CHECKING, cast
@@ -14,7 +14,7 @@ COLLECTION_NAME = "careerrag_chunks"
 
 
 def get_or_create_collection(path: str) -> chromadb.Collection:
-    """Open or create a ChromaDB collection at the given path."""
+    """Initialize the vector store collection."""
     client = chromadb.PersistentClient(path=path)
     return client.get_or_create_collection(name=COLLECTION_NAME)
 
@@ -25,7 +25,7 @@ def _generate_chunk_id(source: str, section: str, text: str) -> str:
 
 
 def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
-    """Store document chunks in the collection."""
+    """Store document chunks in the vector store."""
     if not chunks:
         return 0
     seen: set[str] = set()
@@ -48,5 +48,5 @@ def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
 
 
 def remove_source(collection: chromadb.Collection, source: str) -> None:
-    """Delete all chunks from the given source document."""
+    """Remove all indexed chunks for a source document."""
     collection.delete(where={METADATA_SOURCE: source})

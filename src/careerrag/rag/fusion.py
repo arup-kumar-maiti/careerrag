@@ -1,4 +1,4 @@
-"""Merge ranked results from multiple search methods using reciprocal rank fusion."""
+"""Merge ranked results from multiple search methods."""
 
 from careerrag.rag.observer import log_step
 from careerrag.rag.util import ScoredChunk
@@ -8,7 +8,7 @@ RANK_SMOOTHING_FACTOR = 60
 
 @log_step
 def fuse_rankings(ranked_lists: list[list[ScoredChunk]]) -> list[ScoredChunk]:
-    """Merge multiple ranked result lists using reciprocal rank fusion."""
+    """Merge multiple ranked result lists into a single ranking."""
     chunk_map: dict[str, ScoredChunk] = {}
     fusion_scores: dict[str, float] = {}
     for ranked_list in ranked_lists:

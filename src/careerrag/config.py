@@ -32,7 +32,7 @@ def save_config(config: dict[str, Any]) -> None:
 
 
 def load_config() -> dict[str, Any]:
-    """Load the configuration with defaults for any missing keys."""
+    """Load the application configuration."""
     if not CONFIG_FILE.exists():
         raise FileNotFoundError("Configuration not found. Run 'careerrag init'.")
     user_config = yaml.safe_load(CONFIG_FILE.read_text(encoding="utf-8")) or {}

@@ -1,4 +1,4 @@
-"""Log retrieval pipeline steps automatically via a decorator."""
+"""Log retrieval pipeline steps automatically."""
 
 import logging
 from collections.abc import Callable

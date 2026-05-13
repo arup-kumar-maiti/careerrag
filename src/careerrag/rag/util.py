@@ -1,4 +1,4 @@
-"""Define shared types, constants, and helpers for the RAG pipeline."""
+"""Provide shared types, constants, and helpers for the RAG pipeline."""
 
 from dataclasses import dataclass, field
 
@@ -14,7 +14,7 @@ PROVIDER_OLLAMA = "ollama"
 
 @dataclass
 class DocumentElement:
-    """Represent a structural element of a document."""
+    """Hold a single structural element from a parsed document."""
 
     kind: str
     text: str
@@ -22,7 +22,7 @@ class DocumentElement:
 
 @dataclass
 class LoadedDocument:
-    """Represent a parsed document with structured elements."""
+    """Hold a fully parsed document ready for chunking."""
 
     elements: list[DocumentElement]
     source: str
@@ -30,7 +30,7 @@ class LoadedDocument:
 
 @dataclass
 class Chunk:
-    """Represent a document chunk with metadata."""
+    """Hold a searchable text segment from a document."""
 
     metadata: dict[str, str] = field(default_factory=dict)
     text: str = ""
@@ -38,7 +38,7 @@ class Chunk:
 
 @dataclass
 class ScoredChunk:
-    """Represent a chunk with a relevance score and optional embedding."""
+    """Pair a document chunk with its retrieval score."""
 
     chunk: Chunk
     embedding: list[float] = field(default_factory=list)
@@ -48,7 +48,7 @@ class ScoredChunk:
 def build_scored_chunk(
     metadata: object, text: object, embedding: object, score: float
 ) -> ScoredChunk:
-    """Build a ScoredChunk from raw ChromaDB result fields."""
+    """Convert raw query result fields into a scored chunk."""
     parsed_metadata = (
         {key: str(value) for key, value in metadata.items()}
         if isinstance(metadata, dict)

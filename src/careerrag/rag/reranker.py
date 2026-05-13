@@ -1,4 +1,4 @@
-"""Rescore document chunks using a cross-encoder model."""
+"""Rescore document chunks for improved ranking accuracy."""
 
 from typing import Any
 
@@ -16,7 +16,7 @@ _cache: dict[str, Any] = {}
 def rerank_chunks(
     question: str, candidates: list[ScoredChunk], limit: int
 ) -> list[ScoredChunk]:
-    """Rescore candidates with a cross-encoder."""
+    """Rescore retrieval candidates against the question."""
     if "model" not in _cache:
         _cache["model"] = CrossEncoder(CROSS_ENCODER_MODEL)
     cross_encoder = _cache["model"]

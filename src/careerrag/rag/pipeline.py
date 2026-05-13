@@ -1,4 +1,4 @@
-"""Run the full RAG pipeline from question to streamed answer."""
+"""Run the full RAG pipeline."""
 
 from collections.abc import AsyncGenerator
 from dataclasses import fields
@@ -30,7 +30,7 @@ def _build_retrieval_config(config: dict[str, Any]) -> RetrievalConfig:
 async def stream_response(
     collection: chromadb.Collection, question: str
 ) -> AsyncGenerator[str, None]:
-    """Stream answer tokens for a question against the given collection."""
+    """Answer a question using the full RAG pipeline."""
     config = load_config()
     retrieval_config = _build_retrieval_config(config=config)
     chunks = query_chunks(

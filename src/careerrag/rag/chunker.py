@@ -118,7 +118,7 @@ def _add_overlap(
 
 
 def chunk_document(document: LoadedDocument) -> list[Chunk]:
-    """Split a loaded document into chunks with section metadata."""
+    """Split a loaded document into searchable chunks."""
     sections = _group_elements_by_section(elements=document.elements)
     chunks: list[Chunk] = []
     for section_title, paragraphs in sections:
