@@ -98,7 +98,7 @@ def test_config_lifecycle() -> None:
             merged = load_config()
             assert merged["provider"] == "claude"
             assert merged["model"] == "claude-sonnet-4-20250514"
-            assert merged["host"] == "127.0.0.1"
+            assert merged["server_host"] == "0.0.0.0"
         finally:
             config_module.CONFIG_DIR = original_dir
             config_module.CONFIG_FILE = original_file

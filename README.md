@@ -43,7 +43,7 @@ RAG-powered chat interface for career profiles. Load career documents, ask quest
 - **Hybrid search** — vector and BM25 keyword search run in parallel. Vector captures semantic meaning, keyword catches exact terms. Vector always runs. Config: `keyword_enabled` to toggle BM25
 - **Reciprocal rank fusion** — merge ranked lists into one, boost chunks that appear in multiple lists. Run automatically when two or more search methods are active
 - **Cross-encoder reranking** — replace fast-but-rough retrieval scores with precise relevance judgments by reading each chunk against the question as a pair. Config: `rerank_enabled` (off by default)
-- **MMR diversity selection** — pick chunks that are relevant but dissimilar to each other, prevent near-duplicate results. Config: `diversity_enabled`
+- **MMR diversity selection** — pick chunks that are relevant but dissimilar to each other, prevent near-duplicate results. Optionally boost a priority source document when its chunks are relevant to the question. Config: `diversity_enabled`, `priority_source`
 
 ## Quickstart
 
