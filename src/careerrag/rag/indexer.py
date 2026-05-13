@@ -49,4 +49,4 @@ def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
 
 def remove_source(collection: chromadb.Collection, source: str) -> None:
     """Remove all indexed chunks for a source document."""
-    collection.delete(where={METADATA_SOURCE: source})
+    collection.delete(where={METADATA_SOURCE: source.lower()})

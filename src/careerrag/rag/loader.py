@@ -72,4 +72,4 @@ def load_document(path: Path) -> LoadedDocument:
         ".txt": _load_text,
     }
     elements = loaders[path.suffix.lower()](path)
-    return LoadedDocument(elements=elements, source=path.name)
+    return LoadedDocument(elements=elements, source=path.name.lower())

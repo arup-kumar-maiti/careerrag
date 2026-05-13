@@ -57,7 +57,7 @@ def _apply_diversity(
     params = DiversityParams(
         diversity_weight=config.diversity_weight,
         limit=config.result_count,
-        priority_source=config.priority_source,
+        priority_source=config.priority_source.lower(),
     )
     return diversify_candidates(
         candidates=candidates,
