@@ -24,10 +24,9 @@ def _generate_chunk_id(source: str, section: str, text: str) -> str:
     return hashlib.sha256(content.encode()).hexdigest()
 
 
-def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
-    """Store document chunks in the vector store."""
-    if not chunks:
-        return 0
+def _collect_unique_chunks(
+    chunks: list[Chunk],
+) -> tuple[list[str], list[str], list["Metadata"]]:
     seen: set[str] = set()
     ids: list[str] = []
     documents: list[str] = []
@@ -43,6 +42,16 @@ def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
             ids.append(chunk_id)
             documents.append(chunk.text)
             metadatas.append(cast("Metadata", chunk.metadata))
+    return ids, documents, metadatas
+
+
+def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
+    """Store document chunks in the vector store."""
+    if not chunks:
+        return 0
+    source = chunks[0].metadata[METADATA_SOURCE]
+    remove_source(collection=collection, source=source)
+    ids, documents, metadatas = _collect_unique_chunks(chunks=chunks)
     collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
     return len(ids)
 
