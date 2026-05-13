@@ -12,6 +12,7 @@ DEFAULT_CONFIG = {
     "keyword_enabled": True,
     "model": "llama3.2",
     "ollama_url": "http://localhost:11434/api/chat",
+    "priority_source": "",
     "provider": "ollama",
     "rerank_enabled": False,
     "server_host": "0.0.0.0",

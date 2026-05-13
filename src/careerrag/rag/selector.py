@@ -7,13 +7,25 @@ from careerrag.rag.observer import log_step
 from careerrag.rag.util import METADATA_SOURCE, ScoredChunk
 
 MAX_CHUNKS_PER_SOURCE = 3
+PRIORITY_BOOST = 0.15
+PRIORITY_RELEVANCE_THRESHOLD = 0.3
 SOURCE_REDUNDANCY_PENALTY = 0.3
+
+
+@dataclass
+class DiversityParams:
+    """Bundle diversity selection parameters."""
+
+    diversity_weight: float = 0.5
+    limit: int = 12
+    priority_source: str = ""
 
 
 @dataclass
 class _DiversityState:
     """Track selection state during diversity picking."""
 
+    params: DiversityParams
     selected: list[ScoredChunk] = field(default_factory=list)
     source_counts: dict[str, int] = field(default_factory=dict)
 
@@ -53,11 +65,18 @@ def _compute_similarity(embedding_a: list[float], embedding_b: list[float]) -> f
     return dot_product / (norm_a * norm_b)
 
 
+def _apply_priority_boost(
+    state: _DiversityState, source: str, relevance: float, score: float
+) -> float:
+    if not state.params.priority_source or source != state.params.priority_source:
+        return score
+    if relevance < PRIORITY_RELEVANCE_THRESHOLD:
+        return score
+    return score + PRIORITY_BOOST
+
+
 def _score_candidate(
-    candidate: ScoredChunk,
-    state: _DiversityState,
-    query_embedding: list[float],
-    diversity_weight: float,
+    candidate: ScoredChunk, state: _DiversityState, query_embedding: list[float]
 ) -> float:
     relevance = _compute_similarity(
         embedding_a=query_embedding, embedding_b=candidate.embedding
@@ -66,40 +85,55 @@ def _score_candidate(
         _compute_similarity(embedding_a=candidate.embedding, embedding_b=pick.embedding)
         for pick in state.selected
     )
-    score = diversity_weight * relevance - (1 - diversity_weight) * redundancy
+    score = (
+        state.params.diversity_weight * relevance
+        - (1 - state.params.diversity_weight) * redundancy
+    )
     source = _get_source(scored=candidate)
     score -= SOURCE_REDUNDANCY_PENALTY * state.source_counts.get(source, 0)
-    return score
+    return _apply_priority_boost(
+        state=state, source=source, relevance=relevance, score=score
+    )
+
+
+def _pick_next(
+    candidates: list[ScoredChunk],
+    remaining: list[int],
+    state: _DiversityState,
+    query_embedding: list[float],
+) -> None:
+    eligible = _eligible_indices(
+        candidates=candidates, remaining=remaining, state=state
+    )
+    best_index = max(
+        eligible,
+        key=lambda i: _score_candidate(
+            candidate=candidates[i],
+            state=state,
+            query_embedding=query_embedding,
+        ),
+    )
+    state.selected.append(candidates[best_index])
+    source = _get_source(scored=candidates[best_index])
+    state.source_counts[source] = state.source_counts.get(source, 0) + 1
+    remaining.remove(best_index)
 
 
 @log_step
 def diversify_candidates(
-    candidates: list[ScoredChunk],
-    query_embedding: list[float],
-    limit: int,
-    diversity_weight: float,
+    candidates: list[ScoredChunk], query_embedding: list[float], params: DiversityParams
 ) -> list[ScoredChunk]:
     """Select diverse candidates by relevance and novelty."""
-    if len(candidates) <= limit:
+    if len(candidates) <= params.limit:
         return candidates
-    state = _DiversityState()
+    state = _DiversityState(params=params)
     remaining = list(range(len(candidates)))
     _pick_initial(candidates=candidates, remaining=remaining, state=state)
-    while len(state.selected) < limit and remaining:
-        eligible = _eligible_indices(
-            candidates=candidates, remaining=remaining, state=state
+    while len(state.selected) < params.limit and remaining:
+        _pick_next(
+            candidates=candidates,
+            remaining=remaining,
+            state=state,
+            query_embedding=query_embedding,
         )
-        best_index = max(
-            eligible,
-            key=lambda i: _score_candidate(
-                candidate=candidates[i],
-                state=state,
-                query_embedding=query_embedding,
-                diversity_weight=diversity_weight,
-            ),
-        )
-        state.selected.append(candidates[best_index])
-        source = _get_source(scored=candidates[best_index])
-        state.source_counts[source] = state.source_counts.get(source, 0) + 1
-        remaining.remove(best_index)
     return state.selected
