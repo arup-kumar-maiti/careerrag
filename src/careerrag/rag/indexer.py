@@ -4,23 +4,31 @@ import hashlib
 from typing import TYPE_CHECKING, cast
 
 import chromadb
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
-from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, Chunk
+from careerrag.rag.util import METADATA_SOURCE, Chunk
 
 if TYPE_CHECKING:
-    from chromadb.api.types import Metadata
+    from chromadb.api.types import Embeddable, EmbeddingFunction, Metadata
 
 COLLECTION_NAME = "careerrag_chunks"
+EMBEDDING_MODEL = "BAAI/bge-large-en-v1.5"
 
 
 def get_or_create_collection(path: str) -> chromadb.Collection:
     """Initialize the vector store collection."""
     client = chromadb.PersistentClient(path=path)
-    return client.get_or_create_collection(name=COLLECTION_NAME)
+    embedding_function = cast(
+        "EmbeddingFunction[Embeddable]",
+        SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL),
+    )
+    return client.get_or_create_collection(
+        name=COLLECTION_NAME, embedding_function=embedding_function
+    )
 
 
-def _generate_chunk_id(source: str, section: str, text: str) -> str:
-    content = f"{source}:{section}:{text}"
+def _generate_chunk_id(source: str, text: str) -> str:
+    content = f"{source}:{text}"
     return hashlib.sha256(content.encode()).hexdigest()
 
 
@@ -34,7 +42,6 @@ def _collect_unique_chunks(
     for chunk in chunks:
         chunk_id = _generate_chunk_id(
             source=chunk.metadata[METADATA_SOURCE],
-            section=chunk.metadata[METADATA_SECTION],
             text=chunk.text,
         )
         if chunk_id not in seen:

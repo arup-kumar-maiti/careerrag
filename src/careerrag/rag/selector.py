@@ -7,8 +7,9 @@ from careerrag.rag.observer import log_step
 from careerrag.rag.util import METADATA_SOURCE, ScoredChunk
 
 MAX_CHUNKS_PER_SOURCE = 3
-PRIORITY_BOOST = 0.15
-PRIORITY_RELEVANCE_THRESHOLD = 0.3
+MAX_PRIORITY_CHUNKS_PER_SOURCE = 5
+PRIORITY_BOOST = 0.25
+PRIORITY_RELEVANCE_THRESHOLD = 0.15
 SOURCE_REDUNDANCY_PENALTY = 0.3
 
 
@@ -45,11 +46,16 @@ def _pick_initial(
 def _eligible_indices(
     candidates: list[ScoredChunk], remaining: list[int], state: _DiversityState
 ) -> list[int]:
+    priority = state.params.priority_source
     filtered = [
         i
         for i in remaining
         if state.source_counts.get(_get_source(scored=candidates[i]), 0)
-        < MAX_CHUNKS_PER_SOURCE
+        < (
+            MAX_PRIORITY_CHUNKS_PER_SOURCE
+            if priority and _get_source(scored=candidates[i]) == priority
+            else MAX_CHUNKS_PER_SOURCE
+        )
     ]
     return filtered if filtered else remaining
 
