@@ -23,6 +23,7 @@ DUPLICATE_OVERLAP_THRESHOLD = 0.8
 LINK_DENSITY_THRESHOLD = 0.4
 MINIMUM_SENTENCE_COUNT = 2
 MINIMUM_TEXT_LENGTH = 80
+QUESTION_ENDING = "?"
 QUESTION_RATIO_THRESHOLD = 0.8
 SENTENCE_ENDING = re.compile(r"[.?!]")
 
@@ -75,7 +76,7 @@ def _is_all_questions(text: str) -> bool:
     endings = SENTENCE_ENDING.findall(text)
     if len(endings) < MINIMUM_SENTENCE_COUNT:
         return False
-    question_count = endings.count("?")
+    question_count = endings.count(QUESTION_ENDING)
     return question_count / len(endings) >= QUESTION_RATIO_THRESHOLD
 
 
@@ -92,7 +93,7 @@ def _filter_boilerplate(candidates: list[ScoredChunk]) -> list[ScoredChunk]:
     return [c for c in candidates if not _is_boilerplate(text=c.chunk.text)]
 
 
-def _word_overlap(text_a: str, text_b: str) -> float:
+def _compute_word_overlap(text_a: str, text_b: str) -> float:
     words_a = set(text_a.lower().split())
     words_b = set(text_b.lower().split())
     if not words_a or not words_b:
@@ -106,7 +107,7 @@ def _deduplicate(candidates: list[ScoredChunk]) -> list[ScoredChunk]:
     kept: list[ScoredChunk] = []
     for candidate in candidates:
         is_duplicate = any(
-            _word_overlap(candidate.chunk.text, existing.chunk.text)
+            _compute_word_overlap(candidate.chunk.text, existing.chunk.text)
             >= DUPLICATE_OVERLAP_THRESHOLD
             for existing in kept
         )

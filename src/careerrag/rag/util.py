@@ -10,6 +10,7 @@ METADATA_SECTION = "section"
 METADATA_SOURCE = "source"
 PROVIDER_CLAUDE = "claude"
 PROVIDER_OLLAMA = "ollama"
+SECTION_TEXT_SEPARATOR = "\n"
 
 
 @dataclass
@@ -57,7 +58,7 @@ def build_scored_chunk(
     parsed_embedding = list(embedding) if isinstance(embedding, list) else []
     raw_text = str(text)
     section = parsed_metadata.get(METADATA_SECTION, "")
-    section_prefix = f"{section}\n"
+    section_prefix = f"{section}{SECTION_TEXT_SEPARATOR}"
     if section and raw_text.startswith(section_prefix):
         raw_text = raw_text[len(section_prefix) :]
     return ScoredChunk(

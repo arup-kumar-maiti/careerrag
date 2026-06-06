@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING, cast
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
-from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, Chunk
+from careerrag.rag.util import (
+    METADATA_SECTION,
+    METADATA_SOURCE,
+    SECTION_TEXT_SEPARATOR,
+    Chunk,
+)
 
 if TYPE_CHECKING:
     from chromadb.api.types import Embeddable, EmbeddingFunction, Metadata
@@ -48,7 +53,11 @@ def _collect_unique_chunks(
             seen.add(chunk_id)
             ids.append(chunk_id)
             section = chunk.metadata.get(METADATA_SECTION, "")
-            enriched_text = f"{section}\n{chunk.text}" if section else chunk.text
+            enriched_text = (
+                f"{section}{SECTION_TEXT_SEPARATOR}{chunk.text}"
+                if section
+                else chunk.text
+            )
             documents.append(enriched_text)
             metadatas.append(cast("Metadata", chunk.metadata))
     return ids, documents, metadatas

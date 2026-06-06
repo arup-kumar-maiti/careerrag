@@ -47,7 +47,7 @@ def _pick_initial(
     remaining.remove(best)
 
 
-def _eligible_indices(
+def _find_eligible_indices(
     candidates: list[ScoredChunk], remaining: list[int], state: _DiversityState
 ) -> list[int]:
     priority = state.params.priority_source
@@ -111,7 +111,7 @@ def _pick_next(
     state: _DiversityState,
     query_embedding: list[float],
 ) -> bool:
-    eligible = _eligible_indices(
+    eligible = _find_eligible_indices(
         candidates=candidates, remaining=remaining, state=state
     )
     if not eligible:
