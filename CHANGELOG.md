@@ -15,15 +15,15 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Default `candidate_count` from 40 to 60.
-- Diversity selection from file-level to section-level caps for finer-grained control.
-- Diversity source cap from soft fallback to hard limit.
+- Increase default `candidate_count` from 40 to 60.
+- Switch diversity selection from file-level to section-level caps for finer-grained control.
+- Tighten diversity source cap from soft fallback to hard limit.
 
 ### Fixed
 
-- Contact info chunks bypassing the boilerplate filter due to bare domains and phone numbers.
-- Duplicate section prefix in LLM context by stripping enriched text on retrieval.
-- Stale `candidate_count` default in README.
+- Fix stale `candidate_count` default in README.
+- Prevent contact info chunks from bypassing the boilerplate filter due to bare domains and phone numbers.
+- Remove duplicate section prefix in LLM context by stripping enriched text on retrieval.
 
 ## [1.4.0] - 2026-05-09
 
