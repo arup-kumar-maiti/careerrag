@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from careerrag.rag.observer import log_step
 from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, ScoredChunk
 
+DEFAULT_DIVERSITY_LIMIT = 12
 MAX_CHUNKS_PER_SOURCE = 3
 MAX_PRIORITY_CHUNKS_PER_SOURCE = 5
 PRIORITY_BOOST = 0.25
@@ -18,7 +19,7 @@ class DiversityParams:
     """Configure the diversity selection stage."""
 
     diversity_weight: float = 0.5
-    limit: int = 12
+    limit: int = DEFAULT_DIVERSITY_LIMIT
     priority_source: str = ""
 
 

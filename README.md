@@ -149,7 +149,7 @@ results = query_chunks(collection=collection, question="...", config=config)
 
 | Field                    | Default | Description                                        |
 |--------------------------|---------|----------------------------------------------------|
-| `candidate_count`        | `40`    | Maximum candidates per search method               |
+| `candidate_count`        | `60`    | Maximum candidates per search method               |
 | `diversity_enabled`      | `True`  | Enable diversity selection                         |
 | `diversity_weight`       | `0.5`   | Weight between relevance (1.0) and diversity (0.0) |
 | `keyword_enabled`        | `True`  | Enable BM25 keyword search                         |

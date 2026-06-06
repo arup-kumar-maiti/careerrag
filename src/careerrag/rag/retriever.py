@@ -19,6 +19,9 @@ CONTACT_PATTERNS = [
     re.compile(r"\S+\.\w{2,4}/\S+"),
     re.compile(r"[+]?\d[\d\s\-]{7,}"),
 ]
+DEFAULT_CANDIDATE_COUNT = 60
+DEFAULT_RERANK_CANDIDATE_COUNT = 50
+DEFAULT_RESULT_COUNT = 12
 DUPLICATE_OVERLAP_THRESHOLD = 0.8
 LINK_DENSITY_THRESHOLD = 0.4
 MINIMUM_SENTENCE_COUNT = 2
@@ -32,14 +35,14 @@ SENTENCE_ENDING = re.compile(r"[.?!]")
 class RetrievalConfig:
     """Control retrieval pipeline stages and parameters."""
 
-    candidate_count: int = 60
+    candidate_count: int = DEFAULT_CANDIDATE_COUNT
     diversity_enabled: bool = True
     diversity_weight: float = 0.5
     keyword_enabled: bool = True
     priority_source: str = ""
-    rerank_candidate_count: int = 50
+    rerank_candidate_count: int = DEFAULT_RERANK_CANDIDATE_COUNT
     rerank_enabled: bool = False
-    result_count: int = 12
+    result_count: int = DEFAULT_RESULT_COUNT
 
 
 def _gather_candidates(

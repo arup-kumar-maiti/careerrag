@@ -63,6 +63,11 @@ def _collect_unique_chunks(
     return ids, documents, metadatas
 
 
+def remove_source(collection: chromadb.Collection, source: str) -> None:
+    """Remove all indexed chunks for a source document."""
+    collection.delete(where={METADATA_SOURCE: source.lower()})
+
+
 def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
     """Store document chunks in the vector store."""
     if not chunks:
@@ -72,8 +77,3 @@ def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
     ids, documents, metadatas = _collect_unique_chunks(chunks=chunks)
     collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
     return len(ids)
-
-
-def remove_source(collection: chromadb.Collection, source: str) -> None:
-    """Remove all indexed chunks for a source document."""
-    collection.delete(where={METADATA_SOURCE: source.lower()})
