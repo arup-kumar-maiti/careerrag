@@ -7,6 +7,7 @@ from careerrag.rag.observer import log_step
 from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, ScoredChunk
 
 DEFAULT_DIVERSITY_LIMIT = 12
+DEFAULT_DIVERSITY_WEIGHT = 0.5
 MAX_CHUNKS_PER_SOURCE = 3
 MAX_PRIORITY_CHUNKS_PER_SOURCE = 5
 PRIORITY_BOOST = 0.25
@@ -18,7 +19,7 @@ SOURCE_REDUNDANCY_PENALTY = 0.3
 class DiversityParams:
     """Configure the diversity selection stage."""
 
-    diversity_weight: float = 0.5
+    diversity_weight: float = DEFAULT_DIVERSITY_WEIGHT
     limit: int = DEFAULT_DIVERSITY_LIMIT
     priority_source: str = ""
 
@@ -30,7 +31,7 @@ class _DiversityState:
     source_counts: dict[str, int] = field(default_factory=dict)
 
 
-def _get_source(scored: ScoredChunk) -> str:
+def _build_source_key(scored: ScoredChunk) -> str:
     source = scored.chunk.metadata.get(METADATA_SOURCE, "")
     section = scored.chunk.metadata.get(METADATA_SECTION, "")
     if section:
@@ -41,9 +42,9 @@ def _get_source(scored: ScoredChunk) -> str:
 def _pick_initial(
     candidates: list[ScoredChunk], remaining: list[int], state: _DiversityState
 ) -> None:
-    best = max(remaining, key=lambda i: candidates[i].score)
+    best = max(remaining, key=lambda index: candidates[index].score)
     state.selected.append(candidates[best])
-    source = _get_source(scored=candidates[best])
+    source = _build_source_key(scored=candidates[best])
     state.source_counts[source] = state.source_counts.get(source, 0) + 1
     remaining.remove(best)
 
@@ -53,12 +54,13 @@ def _find_eligible_indices(
 ) -> list[int]:
     priority = state.params.priority_source
     return [
-        i
-        for i in remaining
-        if state.source_counts.get(_get_source(scored=candidates[i]), 0)
+        index
+        for index in remaining
+        if state.source_counts.get(_build_source_key(scored=candidates[index]), 0)
         < (
             MAX_PRIORITY_CHUNKS_PER_SOURCE
-            if priority and _get_source(scored=candidates[i]).startswith(priority)
+            if priority
+            and _build_source_key(scored=candidates[index]).startswith(priority)
             else MAX_CHUNKS_PER_SOURCE
         )
     ]
@@ -99,7 +101,7 @@ def _score_candidate(
         state.params.diversity_weight * relevance
         - (1 - state.params.diversity_weight) * redundancy
     )
-    source = _get_source(scored=candidate)
+    source = _build_source_key(scored=candidate)
     score -= SOURCE_REDUNDANCY_PENALTY * state.source_counts.get(source, 0)
     return _apply_priority_boost(
         state=state, source=source, relevance=relevance, score=score
@@ -119,14 +121,14 @@ def _pick_next(
         return False
     best_index = max(
         eligible,
-        key=lambda i: _score_candidate(
-            candidate=candidates[i],
+        key=lambda index: _score_candidate(
+            candidate=candidates[index],
             state=state,
             query_embedding=query_embedding,
         ),
     )
     state.selected.append(candidates[best_index])
-    source = _get_source(scored=candidates[best_index])
+    source = _build_source_key(scored=candidates[best_index])
     state.source_counts[source] = state.source_counts.get(source, 0) + 1
     remaining.remove(best_index)
     return True

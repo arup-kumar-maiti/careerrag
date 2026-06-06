@@ -71,7 +71,7 @@ def _is_contact_block(text: str) -> bool:
     words = text.split()
     if not words:
         return True
-    contact_hits = sum(len(p.findall(text)) for p in CONTACT_PATTERNS)
+    contact_hits = sum(len(pattern.findall(text)) for pattern in CONTACT_PATTERNS)
     return contact_hits / len(words) >= LINK_DENSITY_THRESHOLD
 
 
@@ -93,7 +93,11 @@ def _is_boilerplate(text: str) -> bool:
 
 
 def _filter_boilerplate(candidates: list[ScoredChunk]) -> list[ScoredChunk]:
-    return [c for c in candidates if not _is_boilerplate(text=c.chunk.text)]
+    return [
+        candidate
+        for candidate in candidates
+        if not _is_boilerplate(text=candidate.chunk.text)
+    ]
 
 
 def _compute_word_overlap(text_a: str, text_b: str) -> float:
