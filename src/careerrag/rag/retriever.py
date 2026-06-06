@@ -13,13 +13,18 @@ from careerrag.rag.selector import DiversityParams, diversify_candidates
 from careerrag.rag.util import Chunk, ScoredChunk
 from careerrag.rag.vector import search_vector
 
-EMAIL_PATTERN = re.compile(r"\S+@\S+\.\S+")
+CONTACT_PATTERNS = [
+    re.compile(r"\S+@\S+\.\S+"),
+    re.compile(r"https?://\S+"),
+    re.compile(r"\S+\.\w{2,4}/\S+"),
+    re.compile(r"[+]?\d[\d\s\-]{7,}"),
+]
+DUPLICATE_OVERLAP_THRESHOLD = 0.8
 LINK_DENSITY_THRESHOLD = 0.4
+MINIMUM_SENTENCE_COUNT = 2
 MINIMUM_TEXT_LENGTH = 80
 QUESTION_RATIO_THRESHOLD = 0.8
-MINIMUM_SENTENCE_COUNT = 2
 SENTENCE_ENDING = re.compile(r"[.?!]")
-URL_PATTERN = re.compile(r"https?://\S+")
 
 
 @dataclass
@@ -58,12 +63,12 @@ def _gather_candidates(
     return search_results[0]
 
 
-def _is_link_dump(text: str) -> bool:
+def _is_contact_block(text: str) -> bool:
     words = text.split()
     if not words:
         return True
-    link_words = len(EMAIL_PATTERN.findall(text)) + len(URL_PATTERN.findall(text))
-    return link_words / len(words) >= LINK_DENSITY_THRESHOLD
+    contact_hits = sum(len(p.findall(text)) for p in CONTACT_PATTERNS)
+    return contact_hits / len(words) >= LINK_DENSITY_THRESHOLD
 
 
 def _is_all_questions(text: str) -> bool:
@@ -78,13 +83,36 @@ def _is_boilerplate(text: str) -> bool:
     stripped = text.strip()
     if len(stripped) < MINIMUM_TEXT_LENGTH:
         return True
-    if _is_link_dump(text=stripped):
+    if _is_contact_block(text=stripped):
         return True
     return _is_all_questions(text=stripped)
 
 
 def _filter_boilerplate(candidates: list[ScoredChunk]) -> list[ScoredChunk]:
     return [c for c in candidates if not _is_boilerplate(text=c.chunk.text)]
+
+
+def _word_overlap(text_a: str, text_b: str) -> float:
+    words_a = set(text_a.lower().split())
+    words_b = set(text_b.lower().split())
+    if not words_a or not words_b:
+        return 0.0
+    intersection = len(words_a & words_b)
+    smaller = min(len(words_a), len(words_b))
+    return intersection / smaller
+
+
+def _deduplicate(candidates: list[ScoredChunk]) -> list[ScoredChunk]:
+    kept: list[ScoredChunk] = []
+    for candidate in candidates:
+        is_duplicate = any(
+            _word_overlap(candidate.chunk.text, existing.chunk.text)
+            >= DUPLICATE_OVERLAP_THRESHOLD
+            for existing in kept
+        )
+        if not is_duplicate:
+            kept.append(candidate)
+    return kept
 
 
 def _apply_diversity(
@@ -120,6 +148,7 @@ def query_chunks(
         collection=collection, question=question, config=config
     )
     candidates = _filter_boilerplate(candidates=candidates)
+    candidates = _deduplicate(candidates=candidates)
     if config.rerank_enabled:
         candidates = rerank_chunks(
             question=question,

@@ -55,8 +55,13 @@ def build_scored_chunk(
         else {}
     )
     parsed_embedding = list(embedding) if isinstance(embedding, list) else []
+    raw_text = str(text)
+    section = parsed_metadata.get(METADATA_SECTION, "")
+    section_prefix = f"{section}\n"
+    if section and raw_text.startswith(section_prefix):
+        raw_text = raw_text[len(section_prefix) :]
     return ScoredChunk(
-        chunk=Chunk(metadata=parsed_metadata, text=str(text)),
+        chunk=Chunk(metadata=parsed_metadata, text=raw_text),
         embedding=parsed_embedding,
         score=score,
     )

@@ -4,7 +4,7 @@ import math
 from dataclasses import dataclass, field
 
 from careerrag.rag.observer import log_step
-from careerrag.rag.util import METADATA_SOURCE, ScoredChunk
+from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, ScoredChunk
 
 MAX_CHUNKS_PER_SOURCE = 3
 MAX_PRIORITY_CHUNKS_PER_SOURCE = 5
@@ -30,7 +30,11 @@ class _DiversityState:
 
 
 def _get_source(scored: ScoredChunk) -> str:
-    return scored.chunk.metadata.get(METADATA_SOURCE, "")
+    source = scored.chunk.metadata.get(METADATA_SOURCE, "")
+    section = scored.chunk.metadata.get(METADATA_SECTION, "")
+    if section:
+        return f"{source}:{section}"
+    return source
 
 
 def _pick_initial(
@@ -47,17 +51,16 @@ def _eligible_indices(
     candidates: list[ScoredChunk], remaining: list[int], state: _DiversityState
 ) -> list[int]:
     priority = state.params.priority_source
-    filtered = [
+    return [
         i
         for i in remaining
         if state.source_counts.get(_get_source(scored=candidates[i]), 0)
         < (
             MAX_PRIORITY_CHUNKS_PER_SOURCE
-            if priority and _get_source(scored=candidates[i]) == priority
+            if priority and _get_source(scored=candidates[i]).startswith(priority)
             else MAX_CHUNKS_PER_SOURCE
         )
     ]
-    return filtered if filtered else remaining
 
 
 def _compute_similarity(embedding_a: list[float], embedding_b: list[float]) -> float:
@@ -72,7 +75,9 @@ def _compute_similarity(embedding_a: list[float], embedding_b: list[float]) -> f
 def _apply_priority_boost(
     state: _DiversityState, source: str, relevance: float, score: float
 ) -> float:
-    if not state.params.priority_source or source != state.params.priority_source:
+    if not state.params.priority_source or not source.startswith(
+        state.params.priority_source
+    ):
         return score
     if relevance < PRIORITY_RELEVANCE_THRESHOLD:
         return score
@@ -105,10 +110,12 @@ def _pick_next(
     remaining: list[int],
     state: _DiversityState,
     query_embedding: list[float],
-) -> None:
+) -> bool:
     eligible = _eligible_indices(
         candidates=candidates, remaining=remaining, state=state
     )
+    if not eligible:
+        return False
     best_index = max(
         eligible,
         key=lambda i: _score_candidate(
@@ -121,6 +128,7 @@ def _pick_next(
     source = _get_source(scored=candidates[best_index])
     state.source_counts[source] = state.source_counts.get(source, 0) + 1
     remaining.remove(best_index)
+    return True
 
 
 @log_step
@@ -134,10 +142,12 @@ def diversify_candidates(
     remaining = list(range(len(candidates)))
     _pick_initial(candidates=candidates, remaining=remaining, state=state)
     while len(state.selected) < params.limit and remaining:
-        _pick_next(
+        picked = _pick_next(
             candidates=candidates,
             remaining=remaining,
             state=state,
             query_embedding=query_embedding,
         )
+        if not picked:
+            break
     return state.selected
