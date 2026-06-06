@@ -29,8 +29,12 @@ scp -r .careerrag/* ssh.example.com:/opt/careerrag/.careerrag/
 ## Install and deploy
 
 ```bash
+ssh ssh.example.com
+```
+
+```bash
 sudo python3 -m venv /opt/careerrag/venv
-sudo /opt/careerrag/venv/bin/pip install careerrag
+sudo /opt/careerrag/venv/bin/pip install --upgrade careerrag
 ```
 
 ```bash
