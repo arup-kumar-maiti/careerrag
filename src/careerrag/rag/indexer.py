@@ -1,33 +1,45 @@
-"""Store and manage document chunks in ChromaDB."""
+"""Store and manage document chunks in the vector store."""
 
 import hashlib
 from typing import TYPE_CHECKING, cast
 
 import chromadb
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
-from careerrag.rag.util import METADATA_SECTION, METADATA_SOURCE, Chunk
+from careerrag.rag.util import (
+    METADATA_SECTION,
+    METADATA_SOURCE,
+    SECTION_TEXT_SEPARATOR,
+    Chunk,
+)
 
 if TYPE_CHECKING:
-    from chromadb.api.types import Metadata
+    from chromadb.api.types import Embeddable, EmbeddingFunction, Metadata
 
 COLLECTION_NAME = "careerrag_chunks"
+EMBEDDING_MODEL = "BAAI/bge-large-en-v1.5"
 
 
 def get_or_create_collection(path: str) -> chromadb.Collection:
-    """Open or create a ChromaDB collection at the given path."""
+    """Initialize the vector store collection."""
     client = chromadb.PersistentClient(path=path)
-    return client.get_or_create_collection(name=COLLECTION_NAME)
+    embedding_function = cast(
+        "EmbeddingFunction[Embeddable]",
+        SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL),
+    )
+    return client.get_or_create_collection(
+        name=COLLECTION_NAME, embedding_function=embedding_function
+    )
 
 
-def _generate_chunk_id(source: str, section: str, text: str) -> str:
-    content = f"{source}:{section}:{text}"
+def _generate_chunk_id(source: str, text: str) -> str:
+    content = f"{source}:{text}"
     return hashlib.sha256(content.encode()).hexdigest()
 
 
-def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
-    """Store document chunks in the collection."""
-    if not chunks:
-        return 0
+def _collect_unique_chunks(
+    chunks: list[Chunk],
+) -> tuple[list[str], list[str], list["Metadata"]]:
     seen: set[str] = set()
     ids: list[str] = []
     documents: list[str] = []
@@ -35,18 +47,33 @@ def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
     for chunk in chunks:
         chunk_id = _generate_chunk_id(
             source=chunk.metadata[METADATA_SOURCE],
-            section=chunk.metadata[METADATA_SECTION],
             text=chunk.text,
         )
         if chunk_id not in seen:
             seen.add(chunk_id)
             ids.append(chunk_id)
-            documents.append(chunk.text)
+            section = chunk.metadata.get(METADATA_SECTION, "")
+            enriched_text = (
+                f"{section}{SECTION_TEXT_SEPARATOR}{chunk.text}"
+                if section
+                else chunk.text
+            )
+            documents.append(enriched_text)
             metadatas.append(cast("Metadata", chunk.metadata))
-    collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
-    return len(ids)
+    return ids, documents, metadatas
 
 
 def remove_source(collection: chromadb.Collection, source: str) -> None:
-    """Delete all chunks from the given source document."""
-    collection.delete(where={METADATA_SOURCE: source})
+    """Remove all indexed chunks for a source document."""
+    collection.delete(where={METADATA_SOURCE: source.lower()})
+
+
+def index_chunks(collection: chromadb.Collection, chunks: list[Chunk]) -> int:
+    """Store document chunks in the vector store."""
+    if not chunks:
+        return 0
+    source = chunks[0].metadata[METADATA_SOURCE]
+    remove_source(collection=collection, source=source)
+    ids, documents, metadatas = _collect_unique_chunks(chunks=chunks)
+    collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+    return len(ids)

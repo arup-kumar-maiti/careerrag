@@ -45,6 +45,6 @@ def _format_chunk(chunk: Chunk) -> str:
 
 
 def format_user_message(question: str, chunks: list[Chunk]) -> str:
-    """Format the question and retrieved context into a user message."""
+    """Compose the LLM prompt for a retrieval query."""
     context = "\n\n".join(_format_chunk(chunk=chunk) for chunk in chunks)
     return f"Context:\n{context}\n\nQuestion: {question}"

@@ -80,7 +80,7 @@ def query(
 def serve(
     docs: Path | None = typer.Option(None, help="Path to the documents directory"),
 ) -> None:
-    """Start the web server, indexing documents if provided."""
+    """Start the web server."""
     logging.basicConfig(
         level=logging.DEBUG, format="%(name)s %(levelname)s %(message)s"
     )

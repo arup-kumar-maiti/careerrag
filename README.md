@@ -43,7 +43,7 @@ RAG-powered chat interface for career profiles. Load career documents, ask quest
 - **Hybrid search** — vector and BM25 keyword search run in parallel. Vector captures semantic meaning, keyword catches exact terms. Vector always runs. Config: `keyword_enabled` to toggle BM25
 - **Reciprocal rank fusion** — merge ranked lists into one, boost chunks that appear in multiple lists. Run automatically when two or more search methods are active
 - **Cross-encoder reranking** — replace fast-but-rough retrieval scores with precise relevance judgments by reading each chunk against the question as a pair. Config: `rerank_enabled` (off by default)
-- **MMR diversity selection** — pick chunks that are relevant but dissimilar to each other, prevent near-duplicate results. Config: `diversity_enabled`
+- **MMR diversity selection** — pick chunks that are relevant but dissimilar to each other, prevent near-duplicate results. Optionally boost a priority source document when its chunks are relevant to the question. Config: `diversity_enabled`, `priority_source`
 
 ## Quickstart
 
@@ -71,6 +71,7 @@ diversity_enabled: true
 keyword_enabled: true
 model: llama3.2
 ollama_url: http://localhost:11434/api/chat
+priority_source: ''
 provider: ollama
 rerank_enabled: false
 server_host: 0.0.0.0
@@ -148,13 +149,14 @@ results = query_chunks(collection=collection, question="...", config=config)
 
 | Field                    | Default | Description                                        |
 |--------------------------|---------|----------------------------------------------------|
-| `candidate_count`        | `20`    | Maximum candidates per search method               |
+| `candidate_count`        | `60`    | Maximum candidates per search method               |
 | `diversity_enabled`      | `True`  | Enable diversity selection                         |
 | `diversity_weight`       | `0.5`   | Weight between relevance (1.0) and diversity (0.0) |
 | `keyword_enabled`        | `True`  | Enable BM25 keyword search                         |
-| `rerank_candidate_count` | `10`    | Maximum candidates to keep after reranking         |
+| `priority_source`        | `""`    | Source document to boost in diversity selection     |
+| `rerank_candidate_count` | `50`    | Maximum candidates to keep after reranking         |
 | `rerank_enabled`         | `False` | Enable cross-encoder reranking                     |
-| `result_count`           | `5`     | Final number of results returned                   |
+| `result_count`           | `12`    | Final number of results returned                   |
 
 ## Data Guardrails
 

@@ -1,4 +1,4 @@
-"""Define shared types, constants, and helpers for the RAG pipeline."""
+"""Provide shared types, constants, and helpers for the RAG pipeline."""
 
 from dataclasses import dataclass, field
 
@@ -10,11 +10,12 @@ METADATA_SECTION = "section"
 METADATA_SOURCE = "source"
 PROVIDER_CLAUDE = "claude"
 PROVIDER_OLLAMA = "ollama"
+SECTION_TEXT_SEPARATOR = "\n"
 
 
 @dataclass
 class DocumentElement:
-    """Represent a structural element of a document."""
+    """Hold a single structural element from a parsed document."""
 
     kind: str
     text: str
@@ -22,7 +23,7 @@ class DocumentElement:
 
 @dataclass
 class LoadedDocument:
-    """Represent a parsed document with structured elements."""
+    """Hold a fully parsed document ready for chunking."""
 
     elements: list[DocumentElement]
     source: str
@@ -30,7 +31,7 @@ class LoadedDocument:
 
 @dataclass
 class Chunk:
-    """Represent a document chunk with metadata."""
+    """Hold a searchable text segment from a document."""
 
     metadata: dict[str, str] = field(default_factory=dict)
     text: str = ""
@@ -38,7 +39,7 @@ class Chunk:
 
 @dataclass
 class ScoredChunk:
-    """Represent a chunk with a relevance score and optional embedding."""
+    """Pair a document chunk with its retrieval score."""
 
     chunk: Chunk
     embedding: list[float] = field(default_factory=list)
@@ -48,15 +49,20 @@ class ScoredChunk:
 def build_scored_chunk(
     metadata: object, text: object, embedding: object, score: float
 ) -> ScoredChunk:
-    """Build a ScoredChunk from raw ChromaDB result fields."""
+    """Convert raw query result fields into a scored chunk."""
     parsed_metadata = (
         {key: str(value) for key, value in metadata.items()}
         if isinstance(metadata, dict)
         else {}
     )
     parsed_embedding = list(embedding) if isinstance(embedding, list) else []
+    raw_text = str(text)
+    section = parsed_metadata.get(METADATA_SECTION, "")
+    section_prefix = f"{section}{SECTION_TEXT_SEPARATOR}"
+    if section and raw_text.startswith(section_prefix):
+        raw_text = raw_text[len(section_prefix) :]
     return ScoredChunk(
-        chunk=Chunk(metadata=parsed_metadata, text=str(text)),
+        chunk=Chunk(metadata=parsed_metadata, text=raw_text),
         embedding=parsed_embedding,
         score=score,
     )

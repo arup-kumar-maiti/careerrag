@@ -11,6 +11,7 @@ careerrag init
 ```bash
 sed \
   -e 's/model: llama3.2/model: claude-sonnet-4-20250514/' \
+  -e "s/priority_source: ''/priority_source: resume.pdf/" \
   -e 's/provider: ollama/provider: claude/' \
   -e 's/username: John Doe/username: Your Name/' \
   .careerrag/config.yml > .careerrag/tmp.yml && mv .careerrag/tmp.yml .careerrag/config.yml

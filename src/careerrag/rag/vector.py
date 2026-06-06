@@ -1,4 +1,4 @@
-"""Search document chunks by semantic similarity using ChromaDB."""
+"""Search document chunks by semantic similarity."""
 
 import chromadb
 
