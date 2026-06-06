@@ -3,6 +3,28 @@
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-06-06
+
+### Added
+
+- Boilerplate filtering for short fragments, contact blocks, and all-question chunks.
+- Explicit embedding model configuration in indexer with `BAAI/bge-large-en-v1.5`.
+- Near-duplicate deduplication with word-overlap threshold before diversity selection.
+- Priority source boosting in fusion ranking.
+- Section metadata enrichment in indexed documents for improved search coverage.
+
+### Changed
+
+- Default `candidate_count` from 40 to 60.
+- Diversity selection from file-level to section-level caps for finer-grained control.
+- Diversity source cap from soft fallback to hard limit.
+
+### Fixed
+
+- Contact info chunks bypassing the boilerplate filter due to bare domains and phone numbers.
+- Duplicate section prefix in LLM context by stripping enriched text on retrieval.
+- Stale `candidate_count` default in README.
+
 ## [1.4.0] - 2026-05-09
 
 ### Added
